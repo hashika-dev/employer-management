@@ -23,6 +23,6 @@ class DashboardController extends Controller
         $labels = $employeesByJob->pluck('job_title'); // List of names: ['Engineer', 'HR']
         $data = $employeesByJob->pluck('count');       // List of numbers: [5, 2]
 
-        return view('dashboard', compact('totalEmployees', 'labels', 'data'));
+        return view('admin-dashboard', compact('totalEmployees', 'labels', 'data'));
     }
 }

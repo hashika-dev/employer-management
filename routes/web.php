@@ -61,4 +61,9 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/admin/login', [AuthenticatedSessionController::class, 'create'])->name('admin.login');
 Route::post('/admin/login', [AuthenticatedSessionController::class, 'store'])->name('admin.login.submit');
+
+// --- STANDARD USER DASHBOARD ---
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 require __DIR__.'/auth.php';
