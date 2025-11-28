@@ -7,68 +7,54 @@ use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 // 1. Homepage
 Route::get('/', function () {
     return view('welcome');
 });
 
-// 2FA VERIFICATION ROUTES
+// 2. Authentication Routes (Login, etc.)
+require __DIR__.'/auth.php';
+
+// 3. Admin Custom Login
+Route::get('/admin/login', [AuthenticatedSessionController::class, 'createAdmin'])->name('admin.login');
+Route::post('/admin/login', [AuthenticatedSessionController::class, 'store'])->name('admin.login.submit');
+
+// 4. 2FA Routes (Protected by Auth)
 Route::middleware(['auth'])->group(function () {
-    // 1. Show the "Enter Code" page
     Route::get('verify', [TwoFactorController::class, 'index'])->name('verify.index');
-    
-    // 2. Check the code (Submit button)
     Route::post('verify', [TwoFactorController::class, 'store'])->name('verify.store');
-    
-    // 3. Resend the email
     Route::get('verify/resend', [TwoFactorController::class, 'resend'])->name('verify.resend');
 });
 
-// 2. Admin & Employee Routes (Protected)
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+// 5. USER Dashboard (Protected by 2FA)
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified', '2fa'])->name('dashboard');
+
+// 6. ADMIN Routes (Protected by Admin Middleware + 2FA)
+Route::middleware(['auth', 'admin', '2fa'])->prefix('admin')->group(function () {
     
-    // Dashboard
-    // ✅ NEW (Points to the Controller logic)
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    // Admin Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
     // Employee Management
     Route::get('/employees', [EmployeeController::class, 'index'])->name('admin.employees.index');
     Route::get('/employees/create', [EmployeeController::class, 'create'])->name('admin.employees.create');
     Route::post('/employees/store', [EmployeeController::class, 'store'])->name('admin.employees.store');
-
+    Route::get('/employees/{id}/edit', [EmployeeController::class, 'edit'])->name('admin.employees.edit');
+    Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('admin.employees.update');
+    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('admin.employees.destroy');
 });
 
-Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('admin.dashboard');
-
-// 4. Profile Routes
+// 7. Profile Routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-// --- EMPLOYEE MANAGEMENT ROUTES ---
-    // 1. List & Create
-    Route::get('/employees', [EmployeeController::class, 'index'])->name('admin.employees.index');
-    Route::get('/employees/create', [EmployeeController::class, 'create'])->name('admin.employees.create');
-    Route::post('/employees/store', [EmployeeController::class, 'store'])->name('admin.employees.store');
-    
-    // 2. Edit & Update (New!)
-    Route::get('/employees/{id}/edit', [EmployeeController::class, 'edit'])->name('admin.employees.edit');
-    Route::put('/employees/{id}', [EmployeeController::class, 'update'])->name('admin.employees.update');
-    
-    // 3. Delete (New!)
-    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('admin.employees.destroy');
-
-// Notice we changed 'create' to 'createAdmin'
-// Notice we changed 'create' to 'createAdmin'
-Route::get('/admin/login', [AuthenticatedSessionController::class, 'createAdmin'])->name('admin.login');
-Route::post('/admin/login', [AuthenticatedSessionController::class, 'store'])->name('admin.login.submit');
-
-// Approval Routes
-    Route::get('/approvals', [App\Http\Controllers\Admin\ApprovalController::class, 'index'])->name('admin.approvals.index');
-    Route::put('/approvals/{id}', [App\Http\Controllers\Admin\ApprovalController::class, 'approve'])->name('admin.approvals.approve');
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified', '2fa'])->name('dashboard'); // <--- '2fa' MUST BE HERE
-require __DIR__.'/auth.php';

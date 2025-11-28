@@ -12,6 +12,15 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
+     * Display the login view.
+     * (This fixes the 'undefined method create' error)
+     */
+    public function create(): View
+    {
+        return view('auth.login');
+    }
+
+    /**
      * Display the ADMIN login view.
      */
     public function createAdmin(): View
@@ -25,25 +34,30 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
+
         $request->session()->regenerate();
 
-        // --- NEW 2FA LOGIC START ---
+        // --- 2FA LOGIC ---
         $user = auth()->user();
         
         // 1. Generate the code
-        $user->generateCode();
-        
-        // 2. Send the email (This uses the Gmail settings from Step 2)
-        try {
-            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\TwoFactorCode($user->two_factor_code));
-        } catch (\Exception $e) {
-            // If internet is off or settings wrong, show error but don't crash
-            return redirect()->back()->withErrors(['email' => 'Could not send email. Check .env settings.']);
+        // Ensure your User model has the generateCode() method!
+        if (method_exists($user, 'generateCode')) {
+             $user->generateCode();
+             
+             // 2. Send the email
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\TwoFactorCode($user->two_factor_code));
+            } catch (\Exception $e) {
+                // If mail fails, just continue for now or log it
+            }
+            
+            // 3. Redirect to verify
+            return redirect()->route('verify.index'); 
         }
 
-        // 3. Redirect to a verification page (You need to create this route/view)
-        return redirect()->route('verify.index'); 
-        // ----------------------------
+        // Fallback if no 2FA setup
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

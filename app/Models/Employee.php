@@ -15,6 +15,11 @@ class Employee extends Model
         'last_name', 
         'job_title', 
         'email', 
-        'phone'
+        'phone',
+        // New HR Fields
+        'address',
+        'birthday',
+        'age',
+        'marital_status'
     ];
 }

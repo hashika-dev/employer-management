@@ -9,13 +9,11 @@ use App\Mail\TwoFactorCode;
 
 class TwoFactorController extends Controller
 {
-    // 1. Show the "Enter Code" page
     public function index()
     {
         return view('auth.verify');
     }
 
-    // 2. Verify the code (When user clicks Submit)
     public function store(Request $request)
     {
         $request->validate([
@@ -24,25 +22,28 @@ class TwoFactorController extends Controller
 
         $user = auth()->user();
 
-        // Check if code matches AND is valid
+        // Check if code matches
         if ($request->two_factor_code == $user->two_factor_code) {
             
-            // Success! Clear the code so they don't get asked again
-            $user->resetCode();
+            $user->resetCode(); // Clear the code
 
-            // Redirect to the Admin Dashboard
-            return redirect()->route('admin.dashboard');
+            // --- SMART REDIRECT ---
+            // If Admin -> Go to Admin Dashboard
+            // If Employee -> Go to User Dashboard
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            } else {
+                return redirect()->route('dashboard');
+            }
         }
 
-        // Failure: Go back with error
         return back()->withErrors(['two_factor_code' => 'The code is invalid or wrong.']);
     }
 
-    // 3. Resend the Email
     public function resend()
     {
         $user = auth()->user();
-        $user->generateCode(); // Make a new number
+        $user->generateCode();
         
         try {
             Mail::to($user->email)->send(new TwoFactorCode($user->two_factor_code));

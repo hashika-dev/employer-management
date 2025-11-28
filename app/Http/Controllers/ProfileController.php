@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\Employee;
 
 class ProfileController extends Controller
 {
@@ -16,8 +17,12 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        // Find the linked Employee record using the User's email
+        $employee = Employee::where('email', $request->user()->email)->first();
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'employee' => $employee, // Pass employee data to the view
         ]);
     }
 
@@ -26,13 +31,41 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user = $request->user();
+        
+        // 1. Update Employee Details (The HR Data)
+        // We find the employee record by the User's email
+        $employee = Employee::where('email', $user->email)->first();
+        
+        if ($employee) {
+            $employee->update([
+                'first_name'     => $request->first_name,
+                'last_name'      => $request->last_name,
+                'phone'          => $request->phone,
+                'address'        => $request->address,
+                'birthday'       => $request->birthday,
+                'marital_status' => $request->marital_status,
+                // Calculate age automatically from birthday
+                'age'            => \Carbon\Carbon::parse($request->birthday)->age,
+            ]);
+            
+            // Sync User's "name" to be "First Last" (Optional, keeps top bar pretty)
+            $user->name = $request->first_name . ' ' . $request->last_name;
         }
 
-        $request->user()->save();
+        // 2. Update User Account Data (Email & Login Info)
+        $user->fill($request->validated());
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+            // Also update the employee email so the link isn't broken
+            if ($employee) {
+                $employee->email = $request->email;
+                $employee->save();
+            }
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
