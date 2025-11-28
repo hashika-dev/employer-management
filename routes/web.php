@@ -59,8 +59,14 @@ Route::middleware('auth')->group(function () {
     // 3. Delete (New!)
     Route::delete('/employees/{id}', [EmployeeController::class, 'destroy'])->name('admin.employees.destroy');
 
-Route::get('/admin/login', [AuthenticatedSessionController::class, 'create'])->name('admin.login');
+// Notice we changed 'create' to 'createAdmin'
+// Notice we changed 'create' to 'createAdmin'
+Route::get('/admin/login', [AuthenticatedSessionController::class, 'createAdmin'])->name('admin.login');
 Route::post('/admin/login', [AuthenticatedSessionController::class, 'store'])->name('admin.login.submit');
+
+// Approval Routes
+    Route::get('/approvals', [App\Http\Controllers\Admin\ApprovalController::class, 'index'])->name('admin.approvals.index');
+    Route::put('/approvals/{id}', [App\Http\Controllers\Admin\ApprovalController::class, 'approve'])->name('admin.approvals.approve');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

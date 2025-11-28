@@ -12,11 +12,11 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Display the ADMIN login view.
      */
-    public function create(): View
+    public function createAdmin(): View
     {
-        return view('auth.login');
+        return view('auth.admin-login');
     }
 
     /**
