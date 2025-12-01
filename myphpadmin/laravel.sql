@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 28, 2025 at 01:12 PM
+-- Generation Time: Nov 28, 2025 at 11:55 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -72,10 +72,7 @@ CREATE TABLE `employees` (
 
 INSERT INTO `employees` (`id`, `first_name`, `last_name`, `job_title`, `email`, `phone`, `created_at`, `updated_at`, `age`, `marital_status`, `address`, `birthday`) VALUES
 (4, 'John Adams Kurt', 'Ebale', 'Software Clingyness', 'kurtumali06@gmail.com', '09852977271', '2025-11-21 23:09:00', '2025-11-21 23:09:00', NULL, NULL, NULL, NULL),
-(6, 'Kier', 'Balatbat', 'Torpe', 'balatbatkierm@gmail.com', 'N/A', '2025-11-24 07:10:46', '2025-11-24 07:12:04', NULL, NULL, NULL, NULL),
-(10, 'kier', '(No Last Name)', 'New Recruit', 'hashikalux@gmail.com', 'N/A', '2025-11-26 08:41:19', '2025-11-26 08:41:19', NULL, NULL, NULL, NULL),
-(11, 'kier', '(No Last Name)', 'New Recruit', 'hashikalux@gmail.com', 'N/A', '2025-11-26 08:48:01', '2025-11-26 08:48:01', NULL, NULL, NULL, NULL),
-(12, 'kurt', '(No Last Name)', 'New Recruit', 'hashikalux@gmail.com', 'N/A', '2025-11-28 03:22:49', '2025-11-28 03:22:49', NULL, NULL, NULL, NULL);
+(28, 'Pending', 'Update', 'New Hire', 'hashikalux@gmail.com', NULL, '2025-11-28 06:49:14', '2025-11-28 06:49:14', NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -151,7 +148,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (4, '2025_11_22_051322_create_employees_table', 1),
 (5, '2025_11_22_062938_add_two_factor_columns_to_users_table', 2),
 (6, '2025_11_22_070110_create_personal_access_tokens_table', 3),
-(7, '2025_11_26_162903_upgrade_tables_for_onboarding', 4);
+(7, '2025_11_26_162903_upgrade_tables_for_onboarding', 4),
+(8, '2025_11_28_134207_add_employee_number_to_users_table', 5);
 
 -- --------------------------------------------------------
 
@@ -204,7 +202,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('TePs9eW65QhpmXJRAC5pqOVGrVPLGqW6HHLdOGxF', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZlZOZjBUZ3NRaUdNTFlMWkQ4ang3SUNZdHdDQXhteEM3eXVPVHRBWSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZWdpc3RlciI7czo1OiJyb3V0ZSI7czo4OiJyZWdpc3RlciI7fX0=', 1764330285);
+('BHMf54C9J8M0RsvB0ZYMkqquDSgXnDeEPhxKAvUA', 30, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoieW05aDhhVTZybXdVS1ZrdHFIYWpvaG9mVDdkWndrWjFwM1NzMXoxTCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9wcm9maWxlIjtzOjU6InJvdXRlIjtzOjEyOiJwcm9maWxlLmVkaXQiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozMDt9', 1764343474),
+('cQEVnTnEX7P7gDdruWSF04nFG29iHq4D3dlgLHS4', 4, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWUVIbmhZQnN5V2ZKTGNJY0NYa2prc0QxZkUyaFVmVnhPNDVUSFRueSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hZG1pbi9lbXBsb3llZXMiO3M6NToicm91dGUiO3M6MjE6ImFkbWluLmVtcGxveWVlcy5pbmRleCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjQ7fQ==', 1764339204);
 
 -- --------------------------------------------------------
 
@@ -214,6 +213,7 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 
 CREATE TABLE `users` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `employee_number` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `role` varchar(255) NOT NULL DEFAULT 'user',
@@ -223,20 +223,17 @@ CREATE TABLE `users` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `two_factor_code` int(11) DEFAULT NULL,
-  `two_factor_expires_at` datetime DEFAULT NULL,
-  `status` varchar(255) NOT NULL DEFAULT 'pending'
+  `two_factor_expires_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `role`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `two_factor_code`, `two_factor_expires_at`, `status`) VALUES
-(1, 'HR Admin', 'admin@example.com', 'admin', '2025-11-21 21:32:56', '$2y$12$uOASiXcQafAif4cZ6LtXOuCd1cv3dYXyf71VWO3gcbxwhRI5m7kbi', 'aHVuVPzqulInJ0LWlkbJDx4eBMkch4IxnxYNRwERQGo7N1QCGAmfTwAOhfxY', '2025-11-21 21:32:56', '2025-11-21 21:32:56', 313571, '2025-11-22 06:54:21', 'pending'),
-(4, 'Tester', 'kurtumali06@gmail.com', 'admin', '2025-11-21 22:31:53', '$2y$12$nZgZTQIM6u9v5mv4Fu8MPuSCA5H5H4xcKRfq9wQtwJVYM3MwHJmV2', 'uodQyCsXlWd1DysXtuB8tp4lqaLBJy5SU5MFb20Xtrk4ZLPmlOeSZ22VuJQA', '2025-11-21 22:31:53', '2025-11-21 22:31:53', NULL, NULL, 'pending'),
-(5, 'Tester', 'balatbatkier@gmail.com', 'admin', '2025-11-21 22:50:17', '$2y$12$V5tKd2lIpEDJqJxcUfX.ReWS2AVdfcmUG5SxIiZL/02OdZMwa9Ex2', 'UsCyubuPAfTLDBixz9OuGIgrsGnZP3XoTKj83bj1goiZn2hlUOqopAtcARC4', '2025-11-21 22:50:17', '2025-11-21 22:50:17', NULL, NULL, 'pending'),
-(7, 'Lavigne', 'lavigneryszardrodriguez@gmail.com', 'user', NULL, '$2y$12$099xkg6l/SZdC.BrKSQ5fePEWVH53z9ERBu6EThnc0Owb6Q1HTLtu', NULL, '2025-11-24 06:49:25', '2025-11-24 06:49:25', NULL, NULL, 'pending'),
-(8, 'Kier Balatbat', 'balatbatkierm@gmail.com', 'user', NULL, '$2y$12$n.3CKiLAHozUkTVGE8MDJO6HCCqtII7RyPRXfE/k12q/K9o9DnseG', NULL, '2025-11-24 07:10:46', '2025-11-24 07:10:46', NULL, NULL, 'pending');
+INSERT INTO `users` (`id`, `employee_number`, `name`, `email`, `role`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`, `two_factor_code`, `two_factor_expires_at`) VALUES
+(1, NULL, 'HR Admin', 'admin@example.com', 'admin', '2025-11-21 21:32:56', '$2y$12$uOASiXcQafAif4cZ6LtXOuCd1cv3dYXyf71VWO3gcbxwhRI5m7kbi', 'aHVuVPzqulInJ0LWlkbJDx4eBMkch4IxnxYNRwERQGo7N1QCGAmfTwAOhfxY', '2025-11-21 21:32:56', '2025-11-21 21:32:56', 313571, '2025-11-22 06:54:21'),
+(4, NULL, 'Tester', 'kurtumali06@gmail.com', 'admin', '2025-11-21 22:31:53', '$2y$12$nZgZTQIM6u9v5mv4Fu8MPuSCA5H5H4xcKRfq9wQtwJVYM3MwHJmV2', 'YgN5ZTJV91OLCzIYDAqjTPa81jYxRD29U4acuPtjJPRv4dsXWsTddBTf2qhG', '2025-11-21 22:31:53', '2025-11-21 22:31:53', NULL, NULL),
+(30, '023', '023', 'hashikalux@gmail.com', 'user', NULL, '$2y$12$GCwZXGxuXTS85rmdEqjkIeC0/B7dgYATlUJOsMizPQ9SAjljP58Wa', 'bvxbcbj0Taoo56RnobRFrAQoIwoej3EzAVUjd6sxgDTJSdKH3Ngk0yuvFgsP', '2025-11-28 06:49:14', '2025-11-28 06:49:14', NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -314,7 +311,8 @@ ALTER TABLE `sessions`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `users_email_unique` (`email`);
+  ADD UNIQUE KEY `users_email_unique` (`email`),
+  ADD UNIQUE KEY `users_employee_number_unique` (`employee_number`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -324,7 +322,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -342,7 +340,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -354,7 +352,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

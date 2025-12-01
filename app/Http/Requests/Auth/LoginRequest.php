@@ -11,25 +11,33 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     */
     public function rules(): array
     {
         return [
+            // 1. Accept Email or ID
             'login_identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
             
-            // --- RESTORED CAPTCHA LOGIC ---
+            // 2. RECAPTCHA CHECK
             'g-recaptcha-response' => [
                 'required',
                 function ($attribute, $value, $fail) {
                     $secret = env('RECAPTCHA_SECRET_KEY');
                     
+                    // If no key is set in .env, skip check (prevents crash on localhost)
                     if (!$secret) {
-                        return; // Skip if no key (prevents crash on localhost without keys)
+                        return; 
                     }
 
                     // Verify with Google
@@ -41,19 +49,22 @@ class LoginRequest extends FormRequest
                     }
                 },
             ],
-            // -----------------------------
         ];
     }
 
+    /**
+     * Attempt to authenticate the request's credentials.
+     */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
         $input = $this->input('login_identifier');
 
-        // Smart Login: Email vs Employee Number
+        // Smart Login Logic: Check if input looks like an Email
         $fieldType = filter_var($input, FILTER_VALIDATE_EMAIL) ? 'email' : 'employee_number';
 
+        // 1. Attempt Login
         if (! Auth::attempt([$fieldType => $input, 'password' => $this->input('password')], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
@@ -62,9 +73,22 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // 2. CHECK IF ARCHIVED (New Ban Logic)
+        $user = Auth::user();
+        if ($user->archived_at) {
+            Auth::logout(); // Kick them out immediately
+            
+            throw ValidationException::withMessages([
+                'login_identifier' => 'Your account has been archived. Please contact HR.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
+    /**
+     * Ensure the login request is not rate limited.
+     */
     public function ensureIsNotRateLimited(): void
     {
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
@@ -83,6 +107,9 @@ class LoginRequest extends FormRequest
         ]);
     }
 
+    /**
+     * Get the rate limiting throttle key for the request.
+     */
     public function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->input('login_identifier')).'|'.$this->ip());

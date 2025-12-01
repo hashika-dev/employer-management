@@ -72,7 +72,31 @@
             <textarea id="address" name="address" rows="3" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('address', $employee->address ?? '') }}</textarea>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div class="border-t border-gray-200 pt-6 mt-6">
+            <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Emergency Contact</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <x-input-label for="emergency_name" :value="__('Contact Name')" />
+                    <x-text-input id="emergency_name" name="emergency_name" type="text" class="mt-1 block w-full" 
+                        :value="old('emergency_name', $employee->emergency_name ?? '')" placeholder="e.g. Spouse Name" />
+                </div>
+
+                <div>
+                    <x-input-label for="emergency_relation" :value="__('Relationship')" />
+                    <x-text-input id="emergency_relation" name="emergency_relation" type="text" class="mt-1 block w-full" 
+                        :value="old('emergency_relation', $employee->emergency_relation ?? '')" placeholder="e.g. Spouse/Parent" />
+                </div>
+
+                <div>
+                    <x-input-label for="emergency_phone" :value="__('Emergency Phone')" />
+                    <x-text-input id="emergency_phone" name="emergency_phone" type="text" class="mt-1 block w-full" 
+                        :value="old('emergency_phone', $employee->emergency_phone ?? '')" />
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 mt-6">
             <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
@@ -81,5 +105,7 @@
                 </p>
             @endif
         </div>
+    </form>
+</section>
     </form>
 </section>

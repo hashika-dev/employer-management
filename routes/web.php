@@ -58,3 +58,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// View Details
+    Route::get('/employees/{id}', [EmployeeController::class, 'show'])->name('admin.employees.show');
+    
+    // NEW: Archive Route
+    Route::post('/employees/{id}/archive', [EmployeeController::class, 'archive'])->name('admin.employees.archive');

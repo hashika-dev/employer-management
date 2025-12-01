@@ -13,13 +13,18 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
             
-            // New HR Fields
+            // Personal Info
             'first_name' => ['required', 'string', 'max:255'],
             'last_name'  => ['required', 'string', 'max:255'],
             'phone'      => ['nullable', 'string', 'max:20'],
             'address'    => ['nullable', 'string', 'max:500'],
             'birthday'   => ['nullable', 'date'],
             'marital_status' => ['nullable', 'string'],
+
+            // --- NEW EMERGENCY FIELDS ---
+            'emergency_name'     => ['nullable', 'string', 'max:255'],
+            'emergency_relation' => ['nullable', 'string', 'max:255'],
+            'emergency_phone'    => ['nullable', 'string', 'max:20'],
         ];
     }
 }

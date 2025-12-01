@@ -29,12 +29,11 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+  public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
         
         // 1. Update Employee Details (The HR Data)
-        // We find the employee record by the User's email
         $employee = Employee::where('email', $user->email)->first();
         
         if ($employee) {
@@ -45,20 +44,26 @@ class ProfileController extends Controller
                 'address'        => $request->address,
                 'birthday'       => $request->birthday,
                 'marital_status' => $request->marital_status,
-                // Calculate age automatically from birthday
-                'age'            => \Carbon\Carbon::parse($request->birthday)->age,
+                'age'            => $request->birthday ? \Carbon\Carbon::parse($request->birthday)->age : null,
+                
+                // Emergency Fields
+                'emergency_name'     => $request->emergency_name,
+                'emergency_relation' => $request->emergency_relation,
+                'emergency_phone'    => $request->emergency_phone,
             ]);
             
-            // Sync User's "name" to be "First Last" (Optional, keeps top bar pretty)
+            // Sync User's "name"
             $user->name = $request->first_name . ' ' . $request->last_name;
         }
 
-        // 2. Update User Account Data (Email & Login Info)
-        $user->fill($request->validated());
+        // 2. Update User Account Data (FIXED)
+        // We use ->only('email') so we don't try to save address/phone into the User table
+        $user->fill($request->only('email'));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
-            // Also update the employee email so the link isn't broken
+            
+            // Also update the employee email so they stay linked
             if ($employee) {
                 $employee->email = $request->email;
                 $employee->save();

@@ -25,6 +25,10 @@ class User extends Authenticatable
         'role',
         'two_factor_code',
         'two_factor_expires_at',
+        'archived_at', // <--- ADD THIS
+        'emergency_name',
+        'emergency_phone',
+        'emergency_relation',
     ];
 
     /**
@@ -48,6 +52,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_expires_at' => 'datetime', // <--- OPTIONAL: Helps Laravel treat this as a date
+            'archived_at' => 'datetime', // <--- ADD THIS
         ];
     }
 

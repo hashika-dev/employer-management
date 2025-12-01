@@ -9,17 +9,20 @@ class Employee extends Model
 {
     use HasFactory;
 
-    // These are the fields we created in the database
     protected $fillable = [
         'first_name', 
         'last_name', 
         'job_title', 
         'email', 
         'phone',
-        // New HR Fields
+        // HR Fields
         'address',
         'birthday',
         'age',
-        'marital_status'
+        'marital_status',
+        // NEW EMERGENCY FIELDS (Make sure these are here!)
+        'emergency_name',
+        'emergency_phone',
+        'emergency_relation',
     ];
 }
