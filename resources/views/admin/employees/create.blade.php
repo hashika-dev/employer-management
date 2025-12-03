@@ -11,7 +11,7 @@
                 
                 <div class="mb-6 border-b pb-4">
                     <h3 class="text-xl font-bold text-slate-700">Account Credentials</h3>
-                    <p class="text-gray-500 text-sm">Enter the login details for the new user.</p>
+                    <p class="text-gray-500 text-sm">Enter the role and login details for the new user.</p>
                 </div>
 
                 @if ($errors->any())
@@ -26,6 +26,26 @@
 
                 <form action="{{ route('admin.employees.store') }}" method="POST">
                     @csrf
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Department</label>
+                            <select name="department_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="" disabled selected hidden></option>
+                                
+                                @foreach($departments as $dept)
+                                    <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
+                                        {{ $dept->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Job Title</label>
+                            <input type="text" name="job_title" placeholder="e.g. Developer" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ old('job_title') }}" required>
+                        </div>
+                    </div>
 
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>

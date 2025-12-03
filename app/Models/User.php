@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+// use Illuminate\Contracts\Auth\MustVerifyEmail; // <--- Commented out or Removed
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// REMOVED "implements MustVerifyEmail"
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -17,18 +19,16 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-   protected $fillable = [
+    protected $fillable = [
         'name',
         'email',
-        'employee_number', // <--- Add this line
+        'employee_number',
         'password',
         'role',
         'two_factor_code',
         'two_factor_expires_at',
-        'archived_at', // <--- ADD THIS
-        'emergency_name',
-        'emergency_phone',
-        'emergency_relation',
+        'archived_at',
+        'profile_completed',
     ];
 
     /**
@@ -51,27 +51,22 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'two_factor_expires_at' => 'datetime', // <--- OPTIONAL: Helps Laravel treat this as a date
-            'archived_at' => 'datetime', // <--- ADD THIS
+            'two_factor_expires_at' => 'datetime',
+            'archived_at' => 'datetime',
+            'profile_completed' => 'boolean',
         ];
     }
 
-    // --- NEW FUNCTIONS FOR 2FA ---
+    // --- 2FA FUNCTIONS ---
 
-    /**
-     * Generate a 6-digit code and save it to the user.
-     */
     public function generateCode()
     {
-        $this->timestamps = false; // Stop it from updating the 'updated_at' column
+        $this->timestamps = false;
         $this->two_factor_code = rand(100000, 999999);
         $this->two_factor_expires_at = now()->addMinutes(10);
         $this->save();
     }
 
-    /**
-     * Clear the code after successful login.
-     */
     public function resetCode()
     {
         $this->timestamps = false;

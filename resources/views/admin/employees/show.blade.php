@@ -44,7 +44,10 @@
                                 {{ $employee->first_name }} {{ $employee->last_name }}
                             </h1>
                             <p class="text-blue-600 font-medium text-lg truncate">
-                                {{ $employee->job_title }}
+                                {{ $employee->job_title }}    
+                            </p>
+                            <p class="text-blue-200 opacity-75 text-sm uppercase tracking-wide">
+                             {{ $employee->department ? $employee->department->name : 'No Department' }}
                             </p>
                         </div>
 

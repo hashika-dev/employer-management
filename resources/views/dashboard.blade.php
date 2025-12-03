@@ -32,27 +32,40 @@
                     </div>
                     
                     <p class="text-slate-300 text-lg max-w-2xl leading-relaxed">
-                        Welcome to your workspace. Please ensure your profile information is up to date for HR records.
+                        @if(Auth::user()->profile_completed)
+                            You are all set! Your profile is active and up to date.
+                        @else
+                            Welcome! Please complete your profile setup to access full features.
+                        @endif
                     </p>
                     
                     <div class="mt-8 flex space-x-4">
-                        <a href="{{ route('profile.edit') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-bold rounded-lg text-slate-900 bg-white hover:bg-blue-50 transition shadow-lg">
-                            Edit My Details
-                        </a>
+                        @if(!Auth::user()->profile_completed)
+                            <a href="{{ route('profile.edit') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-bold rounded-lg text-slate-900 bg-yellow-400 hover:bg-yellow-300 transition shadow-lg animate-pulse">
+                                ⚠️ Complete My Profile
+                            </a>
+                        @else
+                            <button class="inline-flex items-center px-6 py-3 border border-white/20 bg-white/10 text-white text-sm font-bold rounded-lg cursor-default">
+                                ✅ Profile Active
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up delay-200">
-                <a href="{{ route('profile.edit') }}" class="group block bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                
+                <div class="group block bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                     <div class="p-6">
                         <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
-                        <h4 class="text-lg font-bold text-slate-800 mb-2">Personal Info</h4>
-                        <p class="text-slate-500 text-sm">Update your address, phone, and emergency contacts.</p>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Account Status</h4>
+                        <p class="text-slate-500 text-sm">
+                            {{ Auth::user()->profile_completed ? 'Verified & Active' : 'Pending Setup' }}
+                        </p>
                     </div>
-                </a>
+                </div>
 
                 <div class="group block bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                     <div class="p-6">
@@ -60,10 +73,50 @@
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         </div>
                         <h4 class="text-lg font-bold text-slate-800 mb-2">Security</h4>
-                        <p class="text-slate-500 text-sm">Your account is secured with Two-Factor Authentication.</p>
+                        <p class="text-slate-500 text-sm">2FA is enabled for your account.</p>
+                    </div>
+                </div>
+
+                @php
+                    $myEmployee = \App\Models\Employee::where('email', Auth::user()->email)->first();
+                    $deptName = $myEmployee && $myEmployee->department ? $myEmployee->department->name : 'No Dept';
+                @endphp
+                <div class="group block bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="p-6">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">{{ $deptName }}</h4>
+                        <p class="text-slate-500 text-sm">Your assigned department.</p>
                     </div>
                 </div>
             </div>
+
+            @if($myEmployee && $myEmployee->department_id)
+                <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200 animate-fade-in-up delay-300">
+                    <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-slate-800">My Team: {{ $deptName }}</h3>
+                        <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                            {{ \App\Models\Employee::where('department_id', $myEmployee->department_id)->count() }} Members
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            @foreach(\App\Models\Employee::where('department_id', $myEmployee->department_id)->get() as $colleague)
+                                <div class="flex items-center space-x-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition">
+                                    <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                        {{ substr($colleague->first_name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-slate-800">{{ $colleague->first_name }} {{ $colleague->last_name }}</p>
+                                        <p class="text-xs text-slate-500">{{ $colleague->job_title }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
 
         </div>
     </div>

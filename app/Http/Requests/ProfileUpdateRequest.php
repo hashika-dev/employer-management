@@ -21,6 +21,9 @@ class ProfileUpdateRequest extends FormRequest
             'birthday'   => ['nullable', 'date'],
             'marital_status' => ['nullable', 'string'],
 
+            // GENDER FIELD
+            'gender' => ['nullable', 'string'],
+
             // --- NEW EMERGENCY FIELDS ---
             'emergency_name'     => ['nullable', 'string', 'max:255'],
             'emergency_relation' => ['nullable', 'string', 'max:255'],

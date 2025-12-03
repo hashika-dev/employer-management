@@ -24,5 +24,13 @@ class Employee extends Model
         'emergency_name',
         'emergency_phone',
         'emergency_relation',
+        'department_id', // <--- ADD THIS
+        'gender', // <--- ADD THIS
     ];
+
+    // New Relationship Function
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
 }

@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use App\Models\Employee;
+use App\Models\Employee; // <--- Import this
 
 class ProfileController extends Controller
 {
@@ -22,18 +22,18 @@ class ProfileController extends Controller
 
         return view('profile.edit', [
             'user' => $request->user(),
-            'employee' => $employee, // Pass employee data to the view
+            'employee' => $employee, // <--- Pass employee data to the view
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-  public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
         
-        // 1. Update Employee Details (The HR Data)
+        // 1. Update Employee Details (Gender, Address, etc.)
         $employee = Employee::where('email', $user->email)->first();
         
         if ($employee) {
@@ -46,24 +46,26 @@ class ProfileController extends Controller
                 'marital_status' => $request->marital_status,
                 'age'            => $request->birthday ? \Carbon\Carbon::parse($request->birthday)->age : null,
                 
-                // Emergency Fields
+                // SAVE GENDER HERE
+                'gender'         => $request->gender,
+
+                // Emergency Contact
                 'emergency_name'     => $request->emergency_name,
                 'emergency_relation' => $request->emergency_relation,
                 'emergency_phone'    => $request->emergency_phone,
             ]);
             
-            // Sync User's "name"
+            // Sync User's "name" for display purposes
             $user->name = $request->first_name . ' ' . $request->last_name;
         }
 
-        // 2. Update User Account Data (FIXED)
-        // We use ->only('email') so we don't try to save address/phone into the User table
+        // 2. Update User Account Data (Email only)
         $user->fill($request->only('email'));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
             
-            // Also update the employee email so they stay linked
+            // Sync email to employee table if changed
             if ($employee) {
                 $employee->email = $request->email;
                 $employee->save();
@@ -72,7 +74,12 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        // --- NEW LINE: LOCK THE PROFILE ---
+        $user->profile_completed = true; 
+        // ----------------------------------
+
+        // CHANGE THIS LINE: Use 'success' instead of 'status'
+        return Redirect::route('profile.edit')->with('success', 'Profile updated successfully!');
     }
 
     /**

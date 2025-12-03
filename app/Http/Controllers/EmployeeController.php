@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\User;
+use App\Models\Department; // Don't forget this!
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -12,85 +13,73 @@ use App\Mail\AccountCreated;
 
 class EmployeeController extends Controller
 {
-    // 1. Show List (With FIXED Search & Sort)
+    // 1. Show List
     public function index(Request $request)
     {
         $query = Employee::query();
 
-        // --- SEARCH LOGIC (FIXED) ---
+        // Search Logic
         if ($request->filled('search')) {
             $search = $request->search;
+            $userIdEmails = User::where('employee_number', 'like', "%{$search}%")->pluck('email')->toArray();
 
-            // Step A: Find emails associated with the searched Employee ID (from Users table)
-            $userIdEmails = User::where('employee_number', 'like', "%{$search}%")
-                                ->pluck('email')
-                                ->toArray();
-
-            // Step B: Search Employees by Name, Job, Email OR the found User Emails
             $query->where(function($q) use ($search, $userIdEmails) {
                 $q->where('first_name', 'like', "%{$search}%")
                   ->orWhere('last_name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
                   ->orWhere('job_title', 'like', "%{$search}%");
                 
-                // If we found users matching that ID, include them in results
                 if (!empty($userIdEmails)) {
                     $q->orWhereIn('email', $userIdEmails);
                 }
             });
         }
 
-        // --- SORT LOGIC ---
+        // Sort Logic
         if ($request->filled('sort')) {
             switch ($request->sort) {
-                case 'name_asc':
-                    $query->orderBy('first_name', 'asc');
-                    break;
-                case 'name_desc':
-                    $query->orderBy('first_name', 'desc');
-                    break;
-                case 'date_newest':
-                    $query->orderBy('created_at', 'desc');
-                    break;
-                case 'date_oldest':
-                    $query->orderBy('created_at', 'asc');
-                    break;
-                case 'job':
-                    $query->orderBy('job_title', 'asc');
-                    break;
-                default:
-                    $query->orderBy('created_at', 'desc');
+                case 'name_asc': $query->orderBy('first_name', 'asc'); break;
+                case 'name_desc': $query->orderBy('first_name', 'desc'); break;
+                case 'date_newest': $query->orderBy('created_at', 'desc'); break;
+                case 'date_oldest': $query->orderBy('created_at', 'asc'); break;
+                case 'job': $query->orderBy('job_title', 'asc'); break;
+                default: $query->orderBy('created_at', 'desc');
             }
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
         $employees = $query->get();
-
         return view('admin.employees.index', compact('employees'));
     }
 
     // 2. Show Hire Form
     public function create()
     {
-        return view('admin.employees.create');
+        $departments = Department::all();
+        return view('admin.employees.create', compact('departments'));
     }
 
-    // 3. Store (Hire) Logic
+    // 3. Store (Hire) Logic - UPDATED (Removed Gender)
     public function store(Request $request)
     {
         $request->validate([
             'email'           => 'required|email|unique:users,email|unique:employees,email',
             'employee_number' => 'required|string|unique:users,employee_number',
             'password'        => 'required|string|min:6',
+            'job_title'       => 'required|string|max:255',
+            'department_id'   => 'nullable|exists:departments,id',
+            // Removed 'gender' validation here
         ]);
 
         // Create Employee Record
         Employee::create([
-            'first_name' => 'Pending',
-            'last_name'  => 'Update',
-            'job_title'  => 'New Hire',
-            'email'      => $request->email,
+            'first_name'    => 'Pending',
+            'last_name'     => 'Update',
+            'job_title'     => $request->job_title,
+            'email'         => $request->email,
+            'department_id' => $request->department_id,
+            // Removed 'gender' saving here. It stays NULL until user updates it.
         ]);
 
         // Create User Account
@@ -99,7 +88,11 @@ class EmployeeController extends Controller
             'email'           => $request->email,
             'employee_number' => $request->employee_number,
             'password'        => Hash::make($request->password),
-            'role'            => 'user',
+            'profile_completed' => false,
+            
+            // --- ADD THIS LINE ---
+            'email_verified_at' => now(), // <--- Marks email as verified immediately
+            // ---------------------
         ]);
 
         // Send Email
@@ -136,15 +129,15 @@ class EmployeeController extends Controller
     public function edit($id)
     {
         $employee = Employee::findOrFail($id);
-        return view('admin.employees.edit', compact('employee'));
+        $departments = Department::all();
+        return view('admin.employees.edit', compact('employee', 'departments'));
     }
 
     // 6. Update Employee
     public function update(Request $request, $id)
     {
         $employee = Employee::findOrFail($id);
-        $employee->update($request->all());
-        
+        $employee->update($request->all()); // Admin can still edit gender here if they want
         return redirect()->route('admin.employees.index')->with('success', 'Updated!');
     }
 

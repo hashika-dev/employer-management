@@ -40,7 +40,7 @@ class TwoFactorController extends Controller
         return back()->withErrors(['two_factor_code' => 'The code is invalid or wrong.']);
     }
 
-    public function resend()
+   public function resend()
     {
         $user = auth()->user();
         $user->generateCode();
@@ -48,9 +48,11 @@ class TwoFactorController extends Controller
         try {
             Mail::to($user->email)->send(new TwoFactorCode($user->two_factor_code));
         } catch (\Exception $e) {
+            // Use 'error' for red pop-up
             return back()->withErrors(['email' => 'Could not send email.']);
         }
         
-        return back()->with('message', 'A new code has been sent to your email.');
+        // CHANGE THIS LINE: Use 'success' for green pop-up
+        return back()->with('success', 'A new code has been sent to your email.');
     }
 }
