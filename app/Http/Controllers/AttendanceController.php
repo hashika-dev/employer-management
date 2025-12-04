@@ -3,20 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
-    // --- USER SIDE ---
-
+    // --- USER SIDE (Keep Unchanged) ---
     public function timeIn()
     {
         $user = Auth::user();
         $today = Carbon::today();
 
-        // Check if already timed in today
         $attendance = Attendance::where('user_id', $user->id)->where('date', $today)->first();
 
         if ($attendance) {
@@ -29,7 +28,7 @@ class AttendanceController extends Controller
             'time_in' => Carbon::now()->format('H:i:s'),
         ]);
 
-        return back()->with('success', 'Time In Recorded: ' . Carbon::now()->format('h:i A'));
+        return back()->with('success', 'Time In Recorded');
     }
 
     public function timeOut()
@@ -37,7 +36,6 @@ class AttendanceController extends Controller
         $user = Auth::user();
         $today = Carbon::today();
 
-        // Find today's record
         $attendance = Attendance::where('user_id', $user->id)->where('date', $today)->first();
 
         if (!$attendance) {
@@ -52,15 +50,65 @@ class AttendanceController extends Controller
             'time_out' => Carbon::now()->format('H:i:s'),
         ]);
 
-        return back()->with('success', 'Time Out Recorded: ' . Carbon::now()->format('h:i A'));
+        return back()->with('success', 'Time Out Recorded');
     }
 
-    // --- ADMIN SIDE ---
+    // --- ADMIN SIDE (UPDATED) ---
 
-    public function index()
+    /**
+     * Step 1: Display list of employees to choose from
+     */
+    public function index(Request $request)
     {
-        // Get all attendance records, ordered by latest date
-        $attendances = Attendance::with('user')->orderBy('date', 'desc')->orderBy('time_in', 'desc')->get();
-        return view('admin.attendance.index', compact('attendances'));
+        $query = User::query();
+
+        // Optional: Filter the list of users by name
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('employee_number', 'like', '%' . $request->search . '%');
+        }
+
+        // Exclude generic admins if necessary, or just show everyone
+        // $query->where('usertype', 'user'); 
+
+        $employees = $query->paginate(15);
+
+        return view('admin.attendance.index', compact('employees'));
+    }
+
+    /**
+     * Step 2: Display history for a SPECIFIC employee
+     */
+    public function show(Request $request, $user_id)
+    {
+        $employee = User::findOrFail($user_id);
+
+        // Filters
+        $month = $request->get('month', date('m'));
+        $year = $request->get('year', date('Y'));
+
+        // Query Logic
+        $attendanceQuery = Attendance::where('user_id', $user_id)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year);
+
+        // Sorting
+        $sort = $request->get('sort', 'date');
+        $direction = $request->get('direction', 'desc');
+        $attendanceQuery->orderBy($sort, $direction);
+
+        $attendances = $attendanceQuery->get();
+
+        // Calculate Stats for this month
+        $daysPresent = $attendances->count();
+        $lates = 0;
+        foreach($attendances as $att) {
+            $timeIn = Carbon::parse($att->time_in);
+            if ($timeIn->gt(Carbon::parse('09:00:00'))) {
+                $lates++;
+            }
+        }
+
+        return view('admin.attendance.show', compact('employee', 'attendances', 'month', 'year', 'daysPresent', 'lates'));
     }
 }
