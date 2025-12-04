@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use App\Models\Employee; // <--- Import this
+use App\Models\Employee;
 
 class ProfileController extends Controller
 {
@@ -22,7 +22,7 @@ class ProfileController extends Controller
 
         return view('profile.edit', [
             'user' => $request->user(),
-            'employee' => $employee, // <--- Pass employee data to the view
+            'employee' => $employee,
         ]);
     }
 
@@ -45,17 +45,13 @@ class ProfileController extends Controller
                 'birthday'       => $request->birthday,
                 'marital_status' => $request->marital_status,
                 'age'            => $request->birthday ? \Carbon\Carbon::parse($request->birthday)->age : null,
-                
-                // SAVE GENDER HERE
                 'gender'         => $request->gender,
-
-                // Emergency Contact
                 'emergency_name'     => $request->emergency_name,
                 'emergency_relation' => $request->emergency_relation,
                 'emergency_phone'    => $request->emergency_phone,
             ]);
             
-            // Sync User's "name" for display purposes
+            // Sync User's "name" so the top-right corner updates too
             $user->name = $request->first_name . ' ' . $request->last_name;
         }
 
@@ -72,13 +68,21 @@ class ProfileController extends Controller
             }
         }
 
+        // 3. Save the User changes (Name/Email)
         $user->save();
 
-        // --- NEW LINE: LOCK THE PROFILE ---
-        $user->profile_completed = true; 
-        // ----------------------------------
+        // =========================================================
+        // FIX: FORCE THE PROFILE TO BE MARKED AS COMPLETED
+        // =========================================================
+        // We do this AFTER the main save, using forceFill + save
+        // to ensure it writes to the database immediately.
+        if ($user->profile_completed == 0) {
+            $user->forceFill([
+                'profile_completed' => 1
+            ])->save();
+        }
+        // =========================================================
 
-        // CHANGE THIS LINE: Use 'success' instead of 'status'
         return Redirect::route('profile.edit')->with('success', 'Profile updated successfully!');
     }
 

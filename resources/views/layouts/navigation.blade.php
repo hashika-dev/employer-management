@@ -23,11 +23,11 @@
                             {{ __('Staff Directory') }}
                         </x-nav-link>
 
-                        <x-nav-link :href="route('admin.departments.index')" :active="request()->routeIs('admin.departments.*')" class="text-base font-medium">
-                              {{ __('Departments') }}
+                        <x-nav-link :href="route('admin.attendance.index')" :active="request()->routeIs('admin.attendance.*')">
+                            {{ __('Attendance Log') }}
                         </x-nav-link>
-                        
-                        @else
+
+                    @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('My Dashboard') }}
                         </x-nav-link>

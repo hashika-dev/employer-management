@@ -38,6 +38,10 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', '2fa'])->name('dashboard');
 
+// Attendance Routes (User)
+Route::post('/attendance/timein', [App\Http\Controllers\AttendanceController::class, 'timeIn'])->name('attendance.timein');
+Route::post('/attendance/timeout', [App\Http\Controllers\AttendanceController::class, 'timeOut'])->name('attendance.timeout');
+
 // 6. ADMIN Routes
 Route::middleware(['auth', 'admin', '2fa'])->prefix('admin')->group(function () {
     
@@ -71,3 +75,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Attendance History (Admin)
+Route::get('/attendance', [App\Http\Controllers\AttendanceController::class, 'index'])->name('admin.attendance.index');

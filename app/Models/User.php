@@ -29,6 +29,7 @@ class User extends Authenticatable
         'two_factor_expires_at',
         'archived_at',
         'profile_completed',
+        'is_setup', // <--- ADD THIS
     ];
 
     /**
