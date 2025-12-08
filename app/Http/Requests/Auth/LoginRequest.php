@@ -66,7 +66,11 @@ class LoginRequest extends FormRequest
 
         // 1. Attempt Login
         if (! Auth::attempt([$fieldType => $input, 'password' => $this->input('password')], $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+            
+            // =========================================================
+            // CHANGE: Lockout for 15 minutes (900 seconds) on failure
+            // =========================================================
+            RateLimiter::hit($this->throttleKey(), 900);
 
             throw ValidationException::withMessages([
                 'login_identifier' => trans('auth.failed'),
@@ -91,7 +95,10 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        // =========================================================
+        // CHANGE: Limit to 3 attempts instead of 5
+        // =========================================================
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
             return;
         }
 
