@@ -3,7 +3,7 @@
     {{-- ========================================== --}}
     {{-- START: POPUP LOGIC (Only for New Users)   --}}
     {{-- ========================================== --}}
-    @if(!Auth::user()->profile_completed)
+    @if(Auth::user()->is_setup == 0)
         <div style="position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
             
             <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 relative transform" style="animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">

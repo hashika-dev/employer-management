@@ -41,6 +41,11 @@ class User extends Authenticatable
         'emergency_name',
         'emergency_phone',
         'emergency_relation',
+        // ADD THIS LINE:
+    'marital_status',
+
+        'is_setup',          // <--- MAKE SURE THIS IS HERE
+    'profile_completed', // <--- AND THIS
     ];
 
     /**

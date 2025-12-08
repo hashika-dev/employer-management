@@ -8,12 +8,12 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Illuminate\Validation\ValidationException; // <--- Added this import
 
 class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
-     * (This fixes the 'undefined method create' error)
      */
     public function create(): View
     {
@@ -33,34 +33,40 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // 1. Attempt to login
         $request->authenticate();
 
         $request->session()->regenerate();
 
-        // --- 2FA LOGIC ---
         $user = auth()->user();
-        
-        // 1. Generate the code
-        // Ensure your User model has the generateCode() method!
+
+        // --- NEW: CHECK IF ACCOUNT IS ARCHIVED ---
+        if ($user->archived_at) {
+            
+            // Immediately log them out
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            // Throw the error with your custom text
+            throw ValidationException::withMessages([
+                'email' => 'Your account has been SUSPENDED. Please contact HR.',
+            ]);
+        }
+
+        // --- 2FA LOGIC (Keep your existing commented code) ---
         /*
         if (method_exists($user, 'generateCode')) {
              $user->generateCode();
-             
-             // 2. Send the email
-            try {
+             try {
                 \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\TwoFactorCode($user->two_factor_code));
-            } catch (\Exception $e) {
-                // If mail fails, just continue for now or log it
-            }
+             } catch (\Exception $e) { }
             
-            // 3. Redirect to verify
-            return redirect()->route('verify.index'); 
+             return redirect()->route('verify.index'); 
         }
-
-        // Fallback if no 2FA setup
-        return redirect()->intended(route('dashboard', absolute: false));
         */
 
+        // 3. Normal Redirection
         if ($user->role === 'admin') {
             return redirect()->intended(route('admin.dashboard', absolute: false));
         }

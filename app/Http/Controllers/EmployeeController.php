@@ -157,17 +157,27 @@ public function create()
     ]);
 
     // 2. Update the user
-    $employee->update([
+   $employee->update([
         'first_name' => $request->first_name,
         'middle_initial' => $request->middle_initial,
         'last_name' => $request->last_name,
         'suffix_name' => $request->suffix_name,
-        
         'email' => $request->email,
-        'employee_number' => $request->employee_number,
         'department_id' => $request->department_id,
         'job_title' => $request->job_title,
-        'phone' => $request->phone, // Optional: if you have a phone field
+        'phone' => $request->phone,
+        'birthday' => $request->birthday,
+        'marital_status' => $request->marital_status,
+        'address' => $request->address,
+        'emergency_name' => $request->emergency_name,
+        'emergency_relation' => $request->emergency_relation,
+        'emergency_phone' => $request->emergency_phone,
+        'gender' => $request->gender,
+
+        // ADD THIS LINE HERE:
+        // UPDATE BOTH OF THESE:
+        'is_setup' => 1, 
+        'profile_completed' => 1, 
     ]);
 
     return redirect()->route('admin.employees.index')->with('success', 'Employee details updated.');

@@ -79,7 +79,7 @@ class LoginRequest extends FormRequest
             Auth::logout(); // Kick them out immediately
             
             throw ValidationException::withMessages([
-                'login_identifier' => 'Your account has been archived. Please contact HR.',
+                'login_identifier' => 'Your account has been SUSPENDED. Please contact the administrator.',
             ]);
         }
 
