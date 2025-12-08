@@ -144,6 +144,7 @@
             <!-- STEP 2 -->
             <div id="step2" class="hidden space-y-4">
                 <div>
+                    
                     <label class="block text-sm font-medium text-gray-700">Enter OTP</label>
                     <input type="text" name="otp"
                            class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"

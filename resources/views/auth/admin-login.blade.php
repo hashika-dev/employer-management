@@ -144,4 +144,116 @@
         .delay-100 { animation-delay: 0.1s; }
         .delay-200 { animation-delay: 0.2s; }
     </style>
+
+     <div id="unlockModal"
+     class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm">
+
+    <!-- Modal Box -->
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+
+        <div class="text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+            </div>
+
+            <h3 class="text-lg font-semibold text-gray-900">Account Locked</h3>
+            <p class="text-sm text-gray-500 mt-2">
+                You have exceeded the maximum login attempts. To unlock your account, verify your email and set a new password.
+            </p>
+        </div>
+
+        <form method="POST" action="{{ route('account.unlock') }}" class="mt-6 space-y-4">
+            @csrf
+
+            <input type="hidden" id="unlock_email" name="email">
+
+            <!-- STEP 1 -->
+            <div id="step1">
+                <button type="button" onclick="sendOtp()"
+                        class="w-full rounded-md bg-blue-600 px-4 py-2 text-base text-white font-medium shadow-sm hover:bg-blue-700">
+                    Send OTP to my Email
+                </button>
+                <p id="otp-message" class="text-xs text-center mt-2 text-green-600 hidden"></p>
+            </div>
+
+            <!-- STEP 2 -->
+            <div id="step2" class="hidden space-y-4">
+                <div>
+                    <p id="otp-timer-display" class="text-center text-sm font-semibold text-red-600 mb-3 hidden">
+    Time Remaining: <span>02:00</span>
+</p>
+                    <label class="block text-sm font-medium text-gray-700">Enter OTP</label>
+                    <input type="text" name="otp"
+                           class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                           required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">New Password</label>
+                    <input type="password" name="password"
+                           class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                           required>
+                    <p class="text-xs text-gray-400 mt-1">Min 8 chars, 1 Upper, 1 Number, 1 Underscore (_)</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                    <input type="password" name="password_confirmation"
+                           class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                           required>
+                </div>
+
+                <button type="submit"
+                        class="w-full rounded-md bg-green-600 px-4 py-2 text-white font-medium hover:bg-green-700">
+                    Unlock Account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    @if($errors->has('login_identifier') && $errors->first('login_identifier') == 'account_locked')
+        const loginInput = document.getElementById('login_identifier');
+        if (loginInput) {
+            document.getElementById('unlock_email').value = loginInput.value;
+        }
+        document.getElementById('unlockModal').classList.remove('hidden');
+    @endif
+});
+
+function sendOtp() {
+    const email = document.getElementById('unlock_email').value;
+    const btn = event.target;
+
+    btn.disabled = true;
+    btn.innerText = "Sending...";
+
+    fetch("{{ route('account.send-otp') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(res => res.json())
+    .then(() => {
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        document.getElementById('otp-message').innerText = "OTP Sent! Check your inbox.";
+        document.getElementById('otp-message').classList.remove('hidden');
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerText = "Retry Sending OTP";
+        alert("Error sending OTP. Please try again.");
+    });
+}
+</script>
 </x-guest-layout>

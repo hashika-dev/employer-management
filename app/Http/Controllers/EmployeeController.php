@@ -126,7 +126,9 @@ public function create()
         // Find the User directly
         $employee = User::findOrFail($id); 
         // Pass it as 'employee' so you don't have to change your View variable names
-        return view('admin.employees.show', compact('employee'));
+      return view('admin.employees.show', [
+        'employee' => $employee // <-- Check this name!
+    ]);
     }
 
     // 5. Edit Form

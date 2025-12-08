@@ -32,13 +32,22 @@
                     
                     <div class="flex flex-col md:flex-row items-start mb-6 gap-6">
                         
-                        <div class="-mt-12 flex-shrink-0 z-10 relative">
-                            <div class="h-28 w-28 rounded-2xl bg-white p-1.5 shadow-lg">
-                                <div class="h-full w-full bg-blue-600 rounded-xl flex items-center justify-center text-4xl font-bold text-white uppercase">
-                                    {{ substr($employee->name, 0, 2) }}
-                                </div>
-                            </div>
-                        </div>
+                       <div class="flex-shrink-0">
+    <div class="inline-flex items-center justify-center w-28 h-28 rounded-full border-4 border-blue-50 shadow-sm overflow-hidden bg-blue-600">
+        
+        @if($employee->profile_photo_path)
+            {{-- Display the uploaded photo --}}
+            <img src="{{ asset('storage/' . $employee->profile_photo_path) }}" 
+                 alt="{{ $employee->first_name }}'s Photo" 
+                 class="w-full h-full object-cover">
+        @else
+            {{-- Display initials if no photo is uploaded (Fallback) --}}
+            <span class="text-4xl font-bold text-white">
+                {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
+            </span>
+        @endif
+    </div>
+</div>
                         
                         <div class="flex-grow pt-2 min-w-0">
                             <h1 class="text-3xl font-extrabold text-slate-900 break-words leading-tight">

@@ -24,7 +24,7 @@ class AccountReactivationController extends Controller
         
         $user->update([
             'unlock_otp' => Hash::make($otp), // Hash it for security
-            'unlock_otp_expires_at' => Carbon::now()->addMinutes(10),
+            'unlock_otp_expires_at' => Carbon::now()->addMinutes(2),
         ]);
 
         Mail::to($user->email)->send(new AccountUnlockOtp($otp));
@@ -33,7 +33,7 @@ class AccountReactivationController extends Controller
     }
 
     // 2. Unlock Account & Reset Password
-    public function unlock(Request $request)
+   public function unlock(Request $request)
     {
         $request->validate([
             'email' => 'required|email|exists:users,email',
@@ -46,24 +46,30 @@ class AccountReactivationController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        // Verify OTP
+        // 1. Verify OTP and Expiration (Keep existing logic)
         if (!$user->unlock_otp || !Hash::check($request->otp, $user->unlock_otp)) {
             return back()->withErrors(['otp' => 'Invalid OTP code.']);
         }
-
-        // Verify Expiration
         if (Carbon::now()->greaterThan($user->unlock_otp_expires_at)) {
             return back()->withErrors(['otp' => 'OTP has expired. Please request a new one.']);
         }
 
-        // UNLOCK & UPDATE
+        // 2. UNLOCK & UPDATE
         $user->update([
             'password' => Hash::make($request->password),
             'is_locked' => 0,
             'unlock_otp' => null,
             'unlock_otp_expires_at' => null,
         ]);
+        
+        // 3. ROLE-BASED REDIRECTION FIX
+        // Check if the user is an admin and redirect to the specific admin login page.
+        if ($user->role === 'admin') {
+            // NOTE: Replace 'admin.login' with your actual named admin login route if it's different.
+            return redirect()->route('admin.login')->with('status', 'Account unlocked! Please login with your new password.');
+        }
 
+        // Default redirect for all other roles (Employee Login)
         return redirect()->route('login')->with('status', 'Account unlocked! Please login with your new password.');
     }
 }
