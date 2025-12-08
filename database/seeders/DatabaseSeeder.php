@@ -3,23 +3,30 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // 1. Test User creation (Must be updated to match the new name structure)
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'first_name' => 'Test',
+            'last_name'  => 'User',
+            'email'      => 'test@example.com',
+            'role'       => 'user', // Ensure a default role is set
+        ]);
+        
+        // 2. Call your other seeders
+        $this->call([
+            // DepartmentSeeder MUST run first to create the departments.
+            DepartmentSeeder::class,
+            
+            // This seeds the 6-9 random Filipino employees per department.
+            EmployeeDepartmentSeeder::class,
+            
+            // If you have other specific users defined in UserSeeder (like 'Thomas Anderson'), uncomment this:
+            // UserSeeder::class,
         ]);
     }
 }

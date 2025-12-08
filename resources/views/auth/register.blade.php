@@ -43,15 +43,33 @@
                     @csrf
 
                     <!-- Name -->
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                        <div class="mt-1">
-                            <input id="name" name="name" type="text" required autofocus autocomplete="name" 
-                                class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-gray-50 hover:bg-white transition"
-                                value="{{ old('name') }}">
-                        </div>
-                        <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                    </div>
+                   <div class="grid grid-cols-2 gap-4 mt-4">
+    
+    <div>
+        <x-input-label for="first_name" :value="__('First Name')" />
+        <x-text-input id="first_name" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name')" required autofocus autocomplete="given-name" />
+        <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
+    </div>
+
+    <div>
+        <x-input-label for="middle_initial" :value="__('M.I.')" />
+        <x-text-input id="middle_initial" class="block mt-1 w-full" type="text" name="middle_initial" :value="old('middle_initial')" autocomplete="additional-name" />
+        <x-input-error :messages="$errors->get('middle_initial')" class="mt-2" />
+    </div>
+
+    <div>
+        <x-input-label for="last_name" :value="__('Last Name')" />
+        <x-text-input id="last_name" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name')" required autocomplete="family-name" />
+        <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
+    </div>
+
+    <div>
+        <x-input-label for="suffix_name" :value="__('Suffix')" />
+        <x-text-input id="suffix_name" class="block mt-1 w-full" type="text" name="suffix_name" :value="old('suffix_name')" placeholder="Jr., Sr." autocomplete="honorific-suffix" />
+        <x-input-error :messages="$errors->get('suffix_name')" class="mt-2" />
+    </div>
+    
+</div>
 
                     <!-- Email -->
                     <div>

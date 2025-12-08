@@ -21,8 +21,24 @@ class User extends Authenticatable
      */
    // app/Models/User.php
 
+   // Add this method inside your User class
+public function getFullNameAttribute()
+{
+    // Logic: distinct() removes nulls, implode joins them with a space
+    return implode(' ', array_filter([
+        $this->first_name,
+        $this->middle_initial ? $this->middle_initial . '.' : null, // Adds dot to initial
+        $this->last_name,
+        $this->suffix_name
+    ]));
+}
+
 protected $fillable = [
-    'name',
+    // Remove 'name',
+    'first_name',      // <--- Add this
+    'middle_initial',  // <--- Add this
+    'last_name',       // <--- Add this
+    'suffix_name',     // <--- Add this
     'email',
     'employee_number',
     'password',

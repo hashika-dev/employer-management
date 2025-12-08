@@ -13,7 +13,11 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            // REPLACING $table->string('name'); WITH THIS BLOCK:
+        $table->string('first_name');
+        $table->string('middle_initial')->nullable(); // Nullable because not everyone has one
+        $table->string('last_name');
+        $table->string('suffix_name')->nullable();    // Nullable (Jr., Sr., etc.)
             $table->string('email')->unique();
 
             $table->string('role')->default('user');

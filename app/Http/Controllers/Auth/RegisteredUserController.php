@@ -30,51 +30,61 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
+   /**
+     * Handle an incoming registration request.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function store(Request $request): RedirectResponse
     {
+        // 1. Validate the 4 specific name parts (Removing 'name')
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'first_name'     => ['required', 'string', 'max:255'],
+            'middle_initial' => ['nullable', 'string', 'max:5'],
+            'last_name'      => ['required', 'string', 'max:255'],
+            'suffix_name'    => ['nullable', 'string', 'max:10'],
+            'email'          => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'password'       => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // 1. Create User
+        // 2. Create User (Saving the 4 parts directly)
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user',
+            'first_name'     => $request->first_name,
+            'middle_initial' => $request->middle_initial,
+            'last_name'      => $request->last_name,
+            'suffix_name'    => $request->suffix_name,
+            'email'          => $request->email,
+            'password'       => Hash::make($request->password),
+            'role'           => 'user',
         ]);
 
-        // 2. Create Employee Record
-        $parts = explode(' ', $request->name, 2);
-        $firstName = $parts[0];
-        $lastName = isset($parts[1]) ? $parts[1] : '(No Last Name)';
-
+        // 3. Create Employee Record (No more 'explode' needed!)
         Employee::create([
-            'first_name' => $firstName,
-            'last_name' => $lastName,
-            'email' => $request->email,
-            'job_title' => 'New Recruit',
-            'phone' => 'N/A',
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'email'      => $request->email,
+            'job_title'  => 'New Recruit',
+            'phone'      => 'N/A',
+            // Note: If you want to save Middle/Suffix to employees too, 
+            // ensure the employees table has those columns first.
         ]);
 
         event(new Registered($user));
 
-        // 3. Login the User
+        // 4. Login the User
         Auth::login($user);
 
-        // 4. FORCE 2FA: Generate Code NOW
+        // 5. FORCE 2FA: Generate Code NOW
         $user->generateCode();
 
-        // 5. Send Email (Try/Catch prevents crash if offline)
+        // 6. Send Email
         try {
             Mail::to($user->email)->send(new TwoFactorCode($user->two_factor_code));
         } catch (\Exception $e) {
-            // Log error if needed, but proceed to verify page
+            // Log error if needed, but proceed
         }
 
-        // 6. Redirect to Verify Page (NOT Dashboard)
+        // 7. Redirect to Verify Page
         return redirect()->route('verify.index');
     }
 }

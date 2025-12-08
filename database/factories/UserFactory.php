@@ -21,16 +21,34 @@ class UserFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
-    {
-        return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
-        ];
-    }
+   public function definition(): array
+{
+    // --- START: CUSTOM FILIPINO NAMES ---
+// Define a limited pool of common Filipino names for simulation
+$filipinoFirstNames = ['Maria', 'Jose', 'Elena', 'Rafael', 'Diego', 'Carmela', 'Juan', 'Sofia', 'Renato', 'Luzviminda'];
+$filipinoLastNames = ['Dela Cruz', 'Santos', 'Ramos', 'Garcia', 'Perez', 'Aquino', 'Reyes', 'Torres', 'Lozano', 'Cruz'];
+
+$randomFirstName = $filipinoFirstNames[array_rand($filipinoFirstNames)];
+$randomLastName = $filipinoLastNames[array_rand($filipinoLastNames)];
+
+// --- END: CUSTOM FILIPINO NAMES ---
+
+return [
+    'first_name' => $randomFirstName,
+    // Randomly include a middle initial 
+    'middle_initial' => (rand(0, 1) === 1) ? strtoupper(fake()->randomLetter()) : null,
+    'last_name' => $randomLastName,
+    // Randomly include a suffix (Jr., Sr., III)
+    'suffix_name' => (rand(0, 5) === 0) ? fake()->suffix() : null,
+    
+    'email' => fake()->unique()->safeEmail(),
+    // Standard required fields
+    'password' => \Illuminate\Support\Facades\Hash::make('password'),
+    'role' => 'employee', // Default to employee role
+    'email_verified_at' => now(),
+    // ... (other fields)
+];
+}
 
     /**
      * Indicate that the model's email address should be unverified.
