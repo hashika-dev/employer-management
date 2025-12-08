@@ -48,6 +48,10 @@ class User extends Authenticatable
 
         'is_setup',          // <--- MAKE SURE THIS IS HERE
     'profile_completed', // <--- AND THIS
+
+    'is_locked',
+'unlock_otp',
+'unlock_otp_expires_at',
     ];
 
     /**

@@ -8,6 +8,7 @@ use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\AccountReactivationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,3 +76,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::post('/account/send-otp', [AccountReactivationController::class, 'sendOtp'])->name('account.send-otp');
+Route::post('/account/unlock', [AccountReactivationController::class, 'unlock'])->name('account.unlock');

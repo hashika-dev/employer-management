@@ -55,32 +55,48 @@ class LoginRequest extends FormRequest
     /**
      * Attempt to authenticate the request's credentials.
      */
+    /**
+     * Attempt to authenticate the request's credentials.
+     */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
 
         $input = $this->input('login_identifier');
-
-        // Smart Login Logic: Check if input looks like an Email
         $fieldType = filter_var($input, FILTER_VALIDATE_EMAIL) ? 'email' : 'employee_number';
 
-        // 1. Attempt Login
         if (! Auth::attempt([$fieldType => $input, 'password' => $this->input('password')], $this->boolean('remember'))) {
             
-            // =========================================================
-            // CHANGE: Lockout for 15 minutes (900 seconds) on failure
-            // =========================================================
+            // 1. Get current attempts *before* this failed hit
+            $currentAttempts = RateLimiter::attempts($this->throttleKey());
+            
+            // 2. Increment the counter immediately and set the 15-minute decay
             RateLimiter::hit($this->throttleKey(), 900);
 
+            // 3. Calculate remaining attempts (Limit is 3)
+            $newAttempts = $currentAttempts + 1;
+            $remaining = 3 - $newAttempts;
+            
+            if ($remaining > 0) {
+                // Attempts 1 and 2
+                $message = "Invalid login details. You have {$remaining} more attempts before your account is locked.";
+            } else if ($remaining == 0) {
+                // Attempt 3 (The final warning before the lock is triggered on the 4th request)
+                $message = "Invalid login details. This is your final attempt before your account is locked.";
+            } else {
+                // Attempts > 3 (Should be caught by ensureIsNotRateLimited, but for safety)
+                $message = trans('auth.failed');
+            }
+
             throw ValidationException::withMessages([
-                'login_identifier' => trans('auth.failed'),
+                'login_identifier' => $message,
             ]);
         }
 
         // 2. CHECK IF ARCHIVED (New Ban Logic)
         $user = Auth::user();
         if ($user->archived_at) {
-            Auth::logout(); // Kick them out immediately
+            Auth::logout();
             
             throw ValidationException::withMessages([
                 'login_identifier' => 'Your account has been SUSPENDED. Please contact the administrator.',
@@ -90,30 +106,26 @@ class LoginRequest extends FormRequest
         RateLimiter::clear($this->throttleKey());
     }
 
-    /**
-     * Ensure the login request is not rate limited.
-     */
     public function ensureIsNotRateLimited(): void
     {
-        // =========================================================
-        // CHANGE: Limit to 3 attempts instead of 5
-        // =========================================================
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
-            return;
+        // Check if attempts >= 3
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
+            
+            // LOCK THE USER IN DATABASE
+            $user = \App\Models\User::where('email', $this->input('login_identifier'))
+                    ->orWhere('employee_number', $this->input('login_identifier'))
+                    ->first();
+
+            if ($user) {
+                $user->update(['is_locked' => 1]);
+            }
+
+            // Throw special error to trigger the button
+            throw ValidationException::withMessages([
+                'login_identifier' => 'account_locked',
+            ]);
         }
-
-        event(new Lockout($this));
-
-        $seconds = RateLimiter::availableIn($this->throttleKey());
-
-        throw ValidationException::withMessages([
-            'login_identifier' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
-        ]);
     }
-
     /**
      * Get the rate limiting throttle key for the request.
      */
