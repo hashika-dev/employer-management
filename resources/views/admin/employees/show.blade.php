@@ -4,7 +4,7 @@
             <h2 class="font-bold text-xl text-slate-800 leading-tight">
                 {{ __('Employee Profile') }}
             </h2>
-            @if($user && $user->archived_at)
+            @if($employee->archived_at)
                 <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200 animate-pulse">
                     ⛔ ARCHIVED ACCOUNT
                 </span>
@@ -16,7 +16,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen" x-data="{ showArchiveModal: false, showDeleteModal: false }">
+    {{-- UPDATED: Removed 'showDeleteModal' from x-data since we don't need it anymore --}}
+    <div class="py-12 bg-slate-50 min-h-screen" x-data="{ showArchiveModal: false }">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 animate-scale-in">
@@ -34,14 +35,14 @@
                         <div class="-mt-12 flex-shrink-0 z-10 relative">
                             <div class="h-28 w-28 rounded-2xl bg-white p-1.5 shadow-lg">
                                 <div class="h-full w-full bg-blue-600 rounded-xl flex items-center justify-center text-4xl font-bold text-white uppercase">
-                                    {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
+                                    {{ substr($employee->name, 0, 2) }}
                                 </div>
                             </div>
                         </div>
                         
                         <div class="flex-grow pt-2 min-w-0">
                             <h1 class="text-3xl font-extrabold text-slate-900 break-words leading-tight">
-                                {{ $employee->first_name }} {{ $employee->last_name }}
+                                {{ $employee->name }}
                             </h1>
                             <p class="text-blue-600 font-medium text-lg truncate">
                                 {{ $employee->job_title }}    
@@ -54,7 +55,7 @@
                         <div class="mt-2 md:mt-0 flex-shrink-0">
                             <div class="bg-slate-100 px-4 py-2 rounded-lg border border-slate-200 text-center">
                                 <span class="block text-xs text-slate-500 uppercase font-bold tracking-wider">Employee ID</span>
-                                <span class="block text-xl font-mono font-bold text-slate-800">{{ $user->employee_number ?? '---' }}</span>
+                                <span class="block text-xl font-mono font-bold text-slate-800">{{ $employee->employee_number ?? '---' }}</span>
                             </div>
                         </div>
                     </div>
@@ -97,7 +98,9 @@
                                 </div>
                                 <div>
                                     <span class="block text-xs text-slate-500">Age</span>
-                                    <span class="text-slate-800 font-medium">{{ $employee->age ?? 'N/A' }} Years</span>
+                                    <span class="text-slate-800 font-medium">
+                                        {{ $employee->birthday ? \Carbon\Carbon::parse($employee->birthday)->age : 'N/A' }} Years
+                                    </span>
                                 </div>
                                 <div>
                                     <span class="block text-xs text-slate-500">Marital Status</span>
@@ -110,28 +113,29 @@
                             </div>
                             
                             <div class="mt-6 pt-4 border-t border-slate-200">
-        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Emergency Contact</h4>
-        @if($employee->emergency_name)
-            <div class="flex items-center bg-red-50 p-3 rounded-lg border border-red-100">
-                <div class="bg-red-100 p-2 rounded-full mr-3 text-red-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M12 9v5m0 0v-5m0 5h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                </div>
-                <div>
-                    <p class="text-slate-900 font-bold">{{ $employee->emergency_name }} <span class="text-xs text-slate-500 font-normal">({{ $employee->emergency_relation }})</span></p>
-                    <p class="text-slate-600 text-sm font-mono">{{ $employee->emergency_phone }}</p>
-                </div>
-            </div>
-        @else
-            <p class="text-sm text-slate-400 italic flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                No emergency contact info added yet.
-            </p>
-        @endif
-    </div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Emergency Contact</h4>
+                                @if($employee->emergency_name)
+                                    <div class="flex items-center bg-red-50 p-3 rounded-lg border border-red-100">
+                                        <div class="bg-red-100 p-2 rounded-full mr-3 text-red-500">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M12 9v5m0 0v-5m0 5h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        </div>
+                                        <div>
+                                            <p class="text-slate-900 font-bold">{{ $employee->emergency_name }} <span class="text-xs text-slate-500 font-normal">({{ $employee->emergency_relation }})</span></p>
+                                            <p class="text-slate-600 text-sm font-mono">{{ $employee->emergency_phone }}</p>
+                                        </div>
+                                    </div>
+                                @else
+                                    <p class="text-sm text-slate-400 italic flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        No emergency contact info added yet.
+                                    </p>
+                                @endif
+                            </div>
                         </div>
 
                     </div>
 
+                    {{-- FOOTER BUTTONS --}}
                     <div class="mt-10 flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-slate-100 gap-4">
                         <a href="{{ route('admin.employees.index') }}" class="text-slate-500 hover:text-slate-800 font-medium flex items-center transition">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -139,17 +143,15 @@
                         </a>
 
                         <div class="flex flex-wrap justify-center sm:justify-end gap-3 w-full sm:w-auto">
-                            <button @click="showArchiveModal = true" class="px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition transform hover:-translate-y-0.5 {{ $user && $user->archived_at ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200' }}">
-                                {{ $user && $user->archived_at ? 'Restore Access' : 'Archive User' }}
+                            <button @click="showArchiveModal = true" class="px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition transform hover:-translate-y-0.5 {{ $employee->archived_at ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200' }}">
+                                {{ $employee->archived_at ? 'Restore Access' : 'Archive User' }}
                             </button>
 
                             <a href="{{ route('admin.employees.edit', $employee->id) }}" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-sm shadow-md hover:bg-blue-700 transition transform hover:-translate-y-0.5">
                                 Edit Profile
                             </a>
-
-                            <button @click="showDeleteModal = true" class="px-4 py-2 rounded-lg bg-white border border-red-200 text-red-600 font-bold text-sm hover:bg-red-50 transition transform hover:-translate-y-0.5">
-                                Delete
-                            </button>
+                            
+                            {{-- REMOVED: Delete Button was here --}}
                         </div>
                     </div>
                 </div>
@@ -158,25 +160,25 @@
 
         <div x-show="showArchiveModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
             <div class="flex items-center justify-center min-h-screen px-4 text-center">
-                <div x-show="showArchiveModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
+                <div x-show="showArchiveModal" class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
 
-                <div x-show="showArchiveModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                <div x-show="showArchiveModal" class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl relative z-10">
                     <div class="sm:flex sm:items-start">
-                        <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full {{ $user && $user->archived_at ? 'bg-green-100' : 'bg-amber-100' }} sm:mx-0 sm:h-10 sm:w-10">
-                            @if($user && $user->archived_at)
+                        <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full {{ $employee->archived_at ? 'bg-green-100' : 'bg-amber-100' }} sm:mx-0 sm:h-10 sm:w-10">
+                            @if($employee->archived_at)
                                 <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             @else
                                 <svg class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                             @endif
                         </div>
                         <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                            <h3 class="text-lg font-bold leading-6 text-gray-900">{{ $user && $user->archived_at ? 'Restore Access?' : 'Archive User Account?' }}</h3>
+                            <h3 class="text-lg font-bold leading-6 text-gray-900">{{ $employee->archived_at ? 'Restore Access?' : 'Archive User Account?' }}</h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500">
-                                    @if($user && $user->archived_at)
-                                        This will restore access for <strong>{{ $employee->first_name }}</strong>. They will be able to log in immediately.
+                                    @if($employee->archived_at)
+                                        This will restore access for <strong>{{ $employee->name }}</strong>. They will be able to log in immediately.
                                     @else
-                                        Are you sure you want to archive <strong>{{ $employee->first_name }}</strong>? They will be instantly banned from logging in. Data is preserved.
+                                        Are you sure you want to archive <strong>{{ $employee->name }}</strong>? They will be instantly banned from logging in. Data is preserved.
                                     @endif
                                 </p>
                             </div>
@@ -185,8 +187,8 @@
                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                         <form action="{{ route('admin.employees.archive', $employee->id) }}" method="POST">
                             @csrf
-                            <button type="submit" class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto {{ $user && $user->archived_at ? 'bg-green-600 hover:bg-green-500' : 'bg-amber-600 hover:bg-amber-500' }}">
-                                {{ $user && $user->archived_at ? 'Confirm Restore' : 'Confirm Archive' }}
+                            <button type="submit" class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto {{ $employee->archived_at ? 'bg-green-600 hover:bg-green-500' : 'bg-amber-600 hover:bg-amber-500' }}">
+                                {{ $employee->archived_at ? 'Confirm Restore' : 'Confirm Archive' }}
                             </button>
                         </form>
                         <button @click="showArchiveModal = false" type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</button>
@@ -195,38 +197,7 @@
             </div>
         </div>
 
-        <div x-show="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-            <div class="flex items-center justify-center min-h-screen px-4 text-center">
-                <div x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
-
-                <div x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-                    <div class="sm:flex sm:items-start">
-                        <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        </div>
-                        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                            <h3 class="text-lg font-bold leading-6 text-gray-900">Permanently Delete User?</h3>
-                            <div class="mt-2">
-                                <p class="text-sm text-gray-500">
-                                    Are you sure you want to delete <strong>{{ $employee->first_name }} {{ $employee->last_name }}</strong>? <br><br>
-                                    <span class="text-red-600 font-bold">Warning:</span> This action cannot be undone. All data including their login access will be removed immediately.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                        <form action="{{ route('admin.employees.destroy', $employee->id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto">
-                                Yes, Delete Forever
-                            </button>
-                        </form>
-                        <button @click="showDeleteModal = false" type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {{-- REMOVED: Delete Modal was here --}}
 
     </div>
 </x-app-layout>

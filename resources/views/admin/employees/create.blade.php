@@ -27,12 +27,24 @@
                 <form action="{{ route('admin.employees.store') }}" method="POST">
                     @csrf
 
+                    {{-- REMOVED: Full Name Input --}}
+
+                    {{-- Auto-Increment Employee ID Field (From previous step) --}}
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Employee Number (Auto-Generated)</label>
+                        <input type="text" 
+                               name="employee_number" 
+                               value="{{ $suggestedID ?? '' }}" 
+                               class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100 text-gray-500 cursor-not-allowed" 
+                               readonly>
+                        <p class="text-xs text-gray-400 mt-1">System automatically assigned the next available ID.</p>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2">Department</label>
                             <select name="department_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                                 <option value="" disabled selected hidden></option>
-                                
                                 @foreach($departments as $dept)
                                     <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
                                         {{ $dept->name }}
@@ -50,11 +62,6 @@
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
                         <input type="email" name="email" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ old('email') }}" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Employee Number (User ID)</label>
-                        <input type="text" name="employee_number" placeholder="e.g. EMP-2025-001" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" value="{{ old('employee_number') }}" required>
                     </div>
 
                     <div class="mb-6">

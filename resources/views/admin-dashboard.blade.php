@@ -20,6 +20,7 @@
     </x-slot>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
     <div class="py-12 bg-gray-100">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -65,7 +66,6 @@
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     </div>
                 </a>
-
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -89,28 +89,36 @@
 
                 <div class="bg-white rounded-xl shadow-lg p-6 lg:col-span-2 border border-gray-100">
                     <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Staff per Department</h3>
-                    
                     <div class="relative h-64 w-full">
                         <canvas id="deptChart"></canvas>
                     </div>
                 </div>
 
             </div>
-
         </div>
     </div>
 
     <script>
+        // Enable DataLabels
+        Chart.register(ChartDataLabels);
+
         // --- 1. GENDER PIE CHART ---
         const genderCtx = document.getElementById('genderChart');
+        const genderLabels = {!! json_encode($genderLabels) !!};
+
         if(genderCtx) {
             new Chart(genderCtx, {
                 type: 'pie',
                 data: {
-                    labels: {!! json_encode($genderLabels) !!},
+                    labels: genderLabels,
                     datasets: [{
                         data: {!! json_encode($genderData) !!},
-                        backgroundColor: ['#3B82F6', '#EC4899', '#9CA3AF'], // Blue (Male), Pink (Female), Grey (Other)
+                        // DYNAMIC COLORS (UPDATED):
+                        backgroundColor: genderLabels.map(label => {
+                            if(label === 'Male') return '#3B82F6';   // Gray (was Blue)
+                            if(label === 'Female') return '#EC4899'; // Pink (No change)
+                            return '#9CA3AF'; // Blue for "Not Set" (was Gray)
+                        }), 
                         borderWidth: 2,
                         borderColor: '#ffffff'
                     }]
@@ -119,13 +127,23 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom' }
+                        legend: { position: 'bottom' },
+                        datalabels: {
+                            color: '#ffffff',
+                            font: {
+                                weight: 'bold',
+                                size: 16
+                            },
+                            formatter: (value, ctx) => {
+                                return value;
+                            }
+                        }
                     }
                 }
             });
         }
 
-        // --- 2. DEPARTMENT BAR CHART ---
+// --- 2. DEPARTMENT BAR CHART ---
         const deptCtx = document.getElementById('deptChart');
         if(deptCtx) {
             new Chart(deptCtx, {
@@ -133,17 +151,57 @@
                 data: {
                     labels: {!! json_encode($deptLabels) !!},
                     datasets: [{
-                        label: 'Number of Employees',
+                        label: 'Number of Staff',
                         data: {!! json_encode($deptData) !!},
-                        backgroundColor: '#8B5CF6', // Purple
-                        borderRadius: 5
+                        backgroundColor: '#8B5CF6',
+                        borderRadius: 5,
+                        // Ensure the bars don't clip the text
+                        clip: false 
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    // FIX: Add padding at the top so the numbers don't get cut off
+                    layout: {
+                        padding: {
+                            top: 30 
+                        }
+                    },
                     scales: {
-                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        y: { 
+                            beginAtZero: true, 
+                            // Hide the numbers on the left
+                            ticks: { 
+                                display: false 
+                            },
+                            // Hide the grid lines for a cleaner look
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            // Optional: Add 'grace' to automatically add space at the top
+                            grace: '5%' 
+                        },
+                        x: {
+                             grid: {
+                                display: false
+                             }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            color: '#8B5CF6',
+                            font: { 
+                                weight: 'bold',
+                                size: 14 
+                            },
+                            // Ensure the number is always visible
+                            display: true 
+                        }
                     }
                 }
             });

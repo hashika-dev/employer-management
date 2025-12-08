@@ -19,18 +19,36 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'employee_number',
-        'password',
-        'role',
-        'two_factor_code',
-        'two_factor_expires_at',
-        'archived_at',
-        'profile_completed',
-        'is_setup', // <--- ADD THIS
-    ];
+   // app/Models/User.php
+
+protected $fillable = [
+    'name',
+    'email',
+    'employee_number',
+    'password',
+    'role',
+    'two_factor_code',
+    'two_factor_expires_at',
+    'archived_at',
+    'profile_completed',
+    'is_setup',
+    // --- ADD THESE NEW FIELDS ---
+    'job_title',
+    'department_id',
+    'phone',
+    'gender',
+    'birthday',
+    'address',
+    'emergency_name',
+    'emergency_phone',
+    'emergency_relation',
+];
+
+// --- ADD THE RELATIONSHIP ---
+public function department()
+{
+    return $this->belongsTo(Department::class);
+}
 
     /**
      * The attributes that should be hidden for serialization.

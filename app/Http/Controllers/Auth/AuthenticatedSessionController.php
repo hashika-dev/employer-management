@@ -42,6 +42,7 @@ class AuthenticatedSessionController extends Controller
         
         // 1. Generate the code
         // Ensure your User model has the generateCode() method!
+        /*
         if (method_exists($user, 'generateCode')) {
              $user->generateCode();
              
@@ -57,6 +58,13 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Fallback if no 2FA setup
+        return redirect()->intended(route('dashboard', absolute: false));
+        */
+
+        if ($user->role === 'admin') {
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

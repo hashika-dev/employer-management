@@ -85,4 +85,10 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'Staff member removed.');
     }
+
+    // Add the relationship at the bottom of the class
+public function department()
+{
+    return $this->belongsTo(Department::class);
+}
 }
