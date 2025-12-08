@@ -27,12 +27,8 @@
                     </div>
                    <div class="w-full md:w-48">
                         <select name="sort" onchange="this.form.submit()" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                            {{-- Placeholder for the default state (Newest) --}}
                             <option value="" disabled {{ !request('sort') ? 'selected' : '' }}>Sort By...</option>
-                            
-                            {{-- Renamed "Oldest" to "Longest Tenure" --}}
                             <option value="date_oldest" {{ request('sort') == 'date_oldest' ? 'selected' : '' }}>Longest Tenure</option>
-                            
                             <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>Name (A-Z)</option>
                             <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>Name (Z-A)</option>
                         </select>
@@ -62,7 +58,6 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($employees as $employee)
-                            {{-- UPDATED: Access properties directly on $employee (which is a User) --}}
                             @php
                                 $isArchived = $employee->archived_at !== null;
                             @endphp
@@ -70,8 +65,15 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="text-sm font-bold text-gray-900 mr-2">
-                                        {{-- UPDATED: Use 'name' instead of first_name/last_name --}}
-                                        {{ $employee->name }}
+                                        {{-- LOGIC CHANGE HERE: Check if name exists --}}
+                                        @if($employee->first_name)
+                                            {{ $employee->first_name }} 
+                                            {{ $employee->middle_initial ? $employee->middle_initial . '.' : '' }}
+                                            {{ $employee->last_name }} 
+                                            {{ $employee->suffix_name }}
+                                        @else
+                                            <span class="text-red-500 italic font-normal">Pending Setup...</span>
+                                        @endif
                                     </div>
                                     @if($isArchived)
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
@@ -81,9 +83,10 @@
                                 </div>
                                 <div class="text-xs text-gray-400">{{ $employee->employee_number }}</div>
                             </td>
+                            
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                    {{ $employee->job_title }}
+                                    {{ $employee->job_title ?? 'N/A' }}
                                 </span>
                                 <div class="text-xs text-gray-400 mt-1">
                                     {{ $employee->department ? $employee->department->name : '-' }}

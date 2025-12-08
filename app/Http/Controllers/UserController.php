@@ -12,22 +12,25 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        // 1. Start by filtering OUT the admin
+        // Note: Make sure your database role is exactly 'admin' (lowercase). 
+        // If your DB uses 'Admin' or '1', change the value below.
         $query = User::with('department')->where('role', '!=', 'admin');
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
+        if ($request->has('search') && $request->search != '') {
+            // 2. CRITICAL FIX: Group the search conditions in a function.
+            // This ensures logic is: (Not Admin) AND (Name matches OR Employee matches)
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('employee_number', 'like', '%' . $request->search . '%');
+            });
         }
 
         $users = $query->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 
-    public function create()
-    {
-        $departments = Department::all();
-        return view('admin.users.create', compact('departments'));
-    }
+      // 2. Calculate the next number
 
     public function store(Request $request)
     {
@@ -41,7 +44,9 @@ class UserController extends Controller
         ]);
 
         User::create([
-            'name' => $request->name,
+           'first_name' => $request->first_name, // <-- ADD THIS
+    'last_name' => $request->last_name,   // <-- ADD THIS
+    'middle_initial' => $request->middle_initial, // <-- ADD THIS
             'email' => $request->email,
             'employee_number' => $request->employee_number,
             'password' => Hash::make($request->password),
@@ -74,7 +79,7 @@ class UserController extends Controller
             'email' => $request->email,
             'department_id' => $request->department_id,
             'job_title' => $request->job_title,
-            'phone' => $request->phone,
+            // 'phone' => $request->phone, // Ensure 'phone' is in your $request if you use this
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'Staff updated.');
@@ -85,10 +90,4 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'Staff member removed.');
     }
-
-    // Add the relationship at the bottom of the class
-public function department()
-{
-    return $this->belongsTo(Department::class);
-}
 }

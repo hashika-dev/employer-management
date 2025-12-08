@@ -52,11 +52,7 @@
                     </div>
                 </form>
 
-                <div class="text-sm text-gray-500">
-                    Sort by: 
-                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'date', 'direction' => 'desc']) }}" class="underline hover:text-indigo-600">Newest</a> | 
-                    <a href="{{ request()->fullUrlWithQuery(['sort' => 'date', 'direction' => 'asc']) }}" class="underline hover:text-indigo-600">Oldest</a>
-                </div>
+               
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200">

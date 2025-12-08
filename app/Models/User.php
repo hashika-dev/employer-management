@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail; // <--- Commented out or Removed
-
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// REMOVED "implements MustVerifyEmail"
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -19,52 +17,31 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-   // app/Models/User.php
-
-   // Add this method inside your User class
-public function getFullNameAttribute()
-{
-    // Logic: distinct() removes nulls, implode joins them with a space
-    return implode(' ', array_filter([
-        $this->first_name,
-        $this->middle_initial ? $this->middle_initial . '.' : null, // Adds dot to initial
-        $this->last_name,
-        $this->suffix_name
-    ]));
-}
-
-protected $fillable = [
-    // Remove 'name',
-    'first_name',      // <--- Add this
-    'middle_initial',  // <--- Add this
-    'last_name',       // <--- Add this
-    'suffix_name',     // <--- Add this
-    'email',
-    'employee_number',
-    'password',
-    'role',
-    'two_factor_code',
-    'two_factor_expires_at',
-    'archived_at',
-    'profile_completed',
-    'is_setup',
-    // --- ADD THESE NEW FIELDS ---
-    'job_title',
-    'department_id',
-    'phone',
-    'gender',
-    'birthday',
-    'address',
-    'emergency_name',
-    'emergency_phone',
-    'emergency_relation',
-];
-
-// --- ADD THE RELATIONSHIP ---
-public function department()
-{
-    return $this->belongsTo(Department::class);
-}
+    protected $fillable = [
+        // 'name' is removed, replaced by split names below
+        'first_name',
+        'middle_initial',
+        'last_name',
+        'suffix_name',
+        'email',
+        'employee_number',
+        'password',
+        'role',
+        'two_factor_code',
+        'two_factor_expires_at',
+        'archived_at',
+        'profile_completed',
+        'is_setup',
+        'job_title',
+        'department_id',
+        'phone',
+        'gender',
+        'birthday',
+        'address',
+        'emergency_name',
+        'emergency_phone',
+        'emergency_relation',
+    ];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -92,7 +69,36 @@ public function department()
         ];
     }
 
-    // --- 2FA FUNCTIONS ---
+    /* |--------------------------------------------------------------------------
+    | Accessors & Mutators
+    |--------------------------------------------------------------------------
+    */
+
+    // Usage: $user->full_name
+    public function getFullNameAttribute()
+    {
+        return implode(' ', array_filter([
+            $this->first_name,
+            $this->middle_initial ? $this->middle_initial . '.' : null,
+            $this->last_name,
+            $this->suffix_name
+        ]));
+    }
+
+    /* |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /* |--------------------------------------------------------------------------
+    | 2FA Functions
+    |--------------------------------------------------------------------------
+    */
 
     public function generateCode()
     {

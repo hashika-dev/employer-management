@@ -27,8 +27,9 @@
             <p>Please log in using your <strong>Employee Number</strong> and the default password below:</p>
             
             <div class="box">
-                <div><span class="label">Employee Number:</span> <span class="value">{{ $user->employee_number }}</span></div>
-                <div style="margin-top: 10px;"><span class="label">Password:</span> <span class="value">{{ $password }}</span></div>
+                <div><span class="label">Employee Number:</span> <span class="value">{{ $data['employee_number'] }}</span></div>
+                
+                <div style="margin-top: 10px;"><span class="label">Password:</span> <span class="value">{{ $data['password'] }}</span></div>
             </div>
 
             <p>For your security, please change your password immediately after logging in.</p>

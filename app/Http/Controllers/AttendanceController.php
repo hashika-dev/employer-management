@@ -53,23 +53,31 @@ class AttendanceController extends Controller
         return back()->with('success', 'Time Out Recorded');
     }
 
-    // --- ADMIN SIDE (UPDATED) ---
+    // --- ADMIN SIDE (FIXED) ---
 
     /**
      * Step 1: Display list of employees to choose from
      */
     public function index(Request $request)
     {
+        // 1. Start query on User model
         $query = User::query();
 
-        // Optional: Filter the list of users by name
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('employee_number', 'like', '%' . $request->search . '%');
-        }
+        // 2. FILTER OUT ADMIN (Uncommented and fixed)
+        // Ensure this matches your database value exactly (e.g., 'admin', 'Admin', '1')
+        $query->where('role', '!=', 'admin'); 
 
-        // Exclude generic admins if necessary, or just show everyone
-        // $query->where('usertype', 'user'); 
+        // 3. Search Logic
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('employee_number', 'like', "%{$search}%")
+                  ->orWhere('job_title', 'like', "%{$search}%");
+            });
+        }
 
         $employees = $query->paginate(15);
 
@@ -104,6 +112,7 @@ class AttendanceController extends Controller
         $lates = 0;
         foreach($attendances as $att) {
             $timeIn = Carbon::parse($att->time_in);
+            // Example: Late if after 9:00 AM
             if ($timeIn->gt(Carbon::parse('09:00:00'))) {
                 $lates++;
             }

@@ -30,10 +30,24 @@
                         @foreach ($employees as $emp)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-bold text-gray-900">{{ $emp->name }}</div>
+                                <div class="text-sm font-bold text-gray-900">
+                                    {{-- FIX: Combine First and Last Name --}}
+                                    {{ $emp->first_name }} {{ $emp->last_name }}
+                                </div>
+                                <div class="text-xs text-gray-400">
+                                    {{-- Optional: Show Job Title below name --}}
+                                    {{ $emp->job_title }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $emp->employee_number ?? 'N/A' }}
+                           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{-- Checks if value exists, otherwise prints N/A --}}
+                                @if(!empty($emp->employee_number))
+                                    <span class="font-mono bg-gray-100 text-gray-700 py-1 px-2 rounded">
+                                        {{ $emp->employee_number }}
+                                    </span>
+                                @else
+                                    <span class="text-red-400 italic">No ID</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $emp->email }}

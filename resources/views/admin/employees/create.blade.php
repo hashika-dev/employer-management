@@ -24,7 +24,8 @@
                     </div>
                 @endif
 
-                <form action="{{ route('admin.employees.store') }}" method="POST">
+                {{-- Ensure this route matches what is in your routes/web.php --}}
+<form method="POST" action="{{ route('admin.employees.store') }}">
                     @csrf
 
                     {{-- REMOVED: Full Name Input --}}
@@ -32,12 +33,12 @@
                     {{-- Auto-Increment Employee ID Field (From previous step) --}}
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Employee Number (Auto-Generated)</label>
-                        <input type="text" 
-                               name="employee_number" 
-                               value="{{ $suggestedID ?? '' }}" 
-                               class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-100 text-gray-500 cursor-not-allowed" 
-                               readonly>
-                        <p class="text-xs text-gray-400 mt-1">System automatically assigned the next available ID.</p>
+<input type="text" 
+       name="employee_number" 
+       id="employee_number"
+       value="{{ old('employee_number', $newEmployeeId) }}" 
+       readonly 
+       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 cursor-not-allowed">
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
