@@ -9,24 +9,28 @@ class Employee extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'first_name', 
-        'last_name', 
-        'job_title', 
-        'email', 
-        'phone',
-        // HR Fields
-        'address',
-        'birthday',
-        'age',
-        'marital_status',
-        // NEW EMERGENCY FIELDS (Make sure these are here!)
-        'emergency_name',
-        'emergency_phone',
-        'emergency_relation',
-        'department_id', // <--- ADD THIS
-        'gender', // <--- ADD THIS
-    ];
+   protected $fillable = [
+    'user_id',
+    'employee_number',
+    'first_name',
+    'middle_initial', 
+    'last_name',
+    'suffix_name',    
+    'email',
+    'job_title',
+    'department_id',
+    'gender',
+    'birthday',
+    'marital_status',
+    'address',
+    'phone',
+    'emergency_name',
+    'emergency_relation',
+    'emergency_phone',
+    'profile_photo_path',
+    'is_archived',
+    'archived_at'
+];
 
     // New Relationship Function
     public function department()

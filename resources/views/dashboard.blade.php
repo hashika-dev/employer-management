@@ -1,7 +1,7 @@
 <x-app-layout>
     
     {{-- ========================================== --}}
-    {{-- START: POPUP LOGIC (Only for New Users)   --}}
+    {{-- START: POPUP LOGIC (Only for New Users)    --}}
     {{-- ========================================== --}}
     @if(Auth::user()->is_setup == 0)
         <div style="position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
@@ -75,12 +75,18 @@
                         @elseif(!$todayAttendance->time_out)
                             <div class="flex items-center gap-4">
                                 <span class="text-sm font-mono text-gray-600">Started: {{ \Carbon\Carbon::parse($todayAttendance->time_in)->format('h:i A') }}</span>
-                                <form action="{{ route('attendance.timeout') }}" method="POST">
+                                
+                                {{-- ==================================================== --}}
+                                {{-- MODIFIED: Time Out Form with ID & Button Type Change --}}
+                                {{-- ==================================================== --}}
+                                <form id="timeout-form" action="{{ route('attendance.timeout') }}" method="POST">
                                     @csrf
-                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition transform hover:-translate-y-0.5">
+                                    <button type="button" onclick="openTimeoutModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg shadow-md transition transform hover:-translate-y-0.5">
                                         🛑 Time Out
                                     </button>
                                 </form>
+                                {{-- ==================================================== --}}
+
                             </div>
                         @else
                             <div class="text-green-700 bg-green-100 px-4 py-2 rounded-lg font-bold text-sm border border-green-200">
@@ -117,43 +123,47 @@
                     </div>
                 </div>
 
-                @php
-                    $myEmployee = \App\Models\Employee::where('email', Auth::user()->email)->first();
-                    $deptName = $myEmployee && $myEmployee->department ? $myEmployee->department->name : 'No Dept';
-                @endphp
-                {{-- Card 3: Department --}}
+                {{-- Card 3: Department (UPDATED LOGIC) --}}
                 <div class="group block bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-100 hover:shadow-xl transition-all duration-300">
                     <div class="p-6">
                         <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-4">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                         </div>
-                        <h4 class="text-lg font-bold text-slate-800 mb-2">{{ $deptName }}</h4>
+                        {{-- DIRECTLY USE AUTH USER DEPARTMENT --}}
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">
+                            {{ Auth::user()->department ? Auth::user()->department->name : 'No Department' }}
+                        </h4>
                         <p class="text-slate-500 text-sm">Your assigned department.</p>
                     </div>
                 </div>
             </div>
 
-            {{-- Team Section --}}
-            @if($myEmployee && $myEmployee->department_id)
+            {{-- Team Section (UPDATED LOGIC) --}}
+            @if(Auth::user()->department_id)
                 <div class="bg-white overflow-hidden shadow-sm rounded-2xl border border-slate-200 mt-8">
                     <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-slate-800">My Team: {{ $deptName }}</h3>
+                        <h3 class="text-lg font-bold text-slate-800">My Team: {{ Auth::user()->department->name }}</h3>
                         <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                            {{ \App\Models\Employee::where('department_id', $myEmployee->department_id)->count() }} Members
+                            {{-- Count other users in same department --}}
+                            {{ \App\Models\User::where('department_id', Auth::user()->department_id)->count() }} Members
                         </span>
                     </div>
-
                     
                     <div class="p-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            @foreach(\App\Models\Employee::where('department_id', $myEmployee->department_id)->get() as $colleague)
+                            {{-- Loop through USERS, not Employees --}}
+                            @foreach(\App\Models\User::where('department_id', Auth::user()->department_id)->get() as $colleague)
                                 <div class="flex items-center space-x-3 p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition">
-                                    <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                        {{ substr($colleague->first_name, 0, 1) }}
+                                    <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm overflow-hidden">
+                                        @if($colleague->profile_photo_path)
+                                            <img src="{{ asset('storage/' . $colleague->profile_photo_path) }}" class="w-full h-full object-cover">
+                                        @else
+                                            {{ substr($colleague->first_name, 0, 1) }}
+                                        @endif
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-slate-800">{{ $colleague->first_name }} {{ $colleague->last_name }}</p>
-                                        <p class="text-xs text-slate-500">{{ $colleague->job_title }}</p>
+                                        <p class="text-xs text-slate-500">{{ $colleague->job_title ?? 'Staff' }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -164,4 +174,56 @@
 
         </div>
     </div>
+
+    {{-- ========================================== --}}
+    {{-- ADDED: TIMEOUT CONFIRMATION MODAL & SCRIPT --}}
+    {{-- ========================================== --}}
+    
+    <div id="timeoutModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity backdrop-blur-sm" onclick="closeTimeoutModal()"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                
+                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                                <h3 class="text-lg font-semibold leading-6 text-gray-900" id="modal-title">Clock Out Confirmation</h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">
+                                        Are you sure you want to end your shift? This action will log your current time as your clock-out time.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                        <button type="button" onclick="document.getElementById('timeout-form').submit()" class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto">
+                            Yes, Clock Out
+                        </button>
+                        <button type="button" onclick="closeTimeoutModal()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTimeoutModal() {
+            document.getElementById('timeoutModal').classList.remove('hidden');
+        }
+
+        function closeTimeoutModal() {
+            document.getElementById('timeoutModal').classList.add('hidden');
+        }
+    </script>
+
 </x-app-layout>

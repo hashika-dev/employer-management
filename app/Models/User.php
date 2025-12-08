@@ -42,6 +42,8 @@ class User extends Authenticatable
         'emergency_phone',
         'emergency_relation',
         // ADD THIS LINE:
+    'profile_photo_path',
+        // ADD THIS LINE:
     'marital_status',
 
         'is_setup',          // <--- MAKE SURE THIS IS HERE

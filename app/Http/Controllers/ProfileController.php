@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
-use App\Models\Employee;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash; // <--- Make sure this is imported at the top!
 
 class ProfileController extends Controller
 {
@@ -17,78 +18,56 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        // Find the linked Employee record using the User's email
-        $employee = Employee::where('email', $request->user()->email)->first();
-
+        // No need to query Employee model anymore, everything is in User
         return view('profile.edit', [
             'user' => $request->user(),
-            'employee' => $employee,
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $user = $request->user();
-        
-        // 1. Update Employee Details (Gender, Address, etc.)
-        $employee = Employee::where('email', $user->email)->first();
-        
-        if ($employee) {
-            $employee->update([
-                'first_name'     => $request->first_name,
-                'last_name'      => $request->last_name,
-                'phone'          => $request->phone,
-                'address'        => $request->address,
-                'birthday'       => $request->birthday,
-                'marital_status' => $request->marital_status,
-                'age'            => $request->birthday ? \Carbon\Carbon::parse($request->birthday)->age : null,
-                'gender'         => $request->gender,
-                'emergency_name'     => $request->emergency_name,
-                'emergency_relation' => $request->emergency_relation,
-                'emergency_phone'    => $request->emergency_phone,
-            ]);
-            
-            // Sync User's "name" so the top-right corner updates too
-            $user->name = $request->first_name . ' ' . $request->last_name;
+   public function update(ProfileUpdateRequest $request): RedirectResponse
+{
+    $user = $request->user();
+    $isLocked = $user->profile_completed == 1;
+
+    // 1. Handle Photo Upload (Allowed even if locked)
+    if ($request->hasFile('photo')) {
+        if ($user->profile_photo_path) {
+            Storage::disk('public')->delete($user->profile_photo_path);
         }
-
-        // 2. Update User Account Data (Email only)
-        $user->fill($request->only('email'));
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-            
-            // Sync email to employee table if changed
-            if ($employee) {
-                $employee->email = $request->email;
-                $employee->save();
-            }
-        }
-
-        // 3. Save the User changes (Name/Email)
-        $user->save();
-
-        // =========================================================
-        // FIX: FORCE THE PROFILE TO BE MARKED AS COMPLETED
-        // =========================================================
-        // We do this AFTER the main save, using forceFill + save
-        // to ensure it writes to the database immediately.
-        if ($user->profile_completed == 0) {
-            $user->forceFill([
-                'profile_completed' => 1
-            ])->save();
-        }
-        // =========================================================
-
-        return Redirect::route('profile.edit')->with('success', 'Profile updated successfully!');
+        $user->profile_photo_path = $request->file('photo')->store('profile-photos', 'public');
     }
 
-    /**
-     * Delete the user's account.
-     */
+    // 2. Handle Password Change (Allowed even if locked)
+    if ($request->filled('password')) {
+        $user->password = Hash::make($request->password);
+    }
+
+    // 3. Handle Personal Info (BLOCKED if locked)
+    if (! $isLocked) {
+        // Only update these fields if the profile is NOT locked
+        $user->fill($request->except(['password', 'current_password', 'photo']));
+        
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+    }
+
+    // 4. Save Changes
+    $user->save();
+
+    // 5. Lock Profile Logic (Only runs if not yet locked)
+    if (! $isLocked && !empty($user->first_name) && !empty($user->last_name) && !empty($user->birthday)) {
+        $user->forceFill([
+            'profile_completed' => 1,
+            'is_setup' => 1 
+        ])->save();
+    }
+
+    return Redirect::route('profile.edit')->with('status', 'profile-updated');
+}
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [

@@ -11,14 +11,19 @@ class Department extends Model
 
     protected $fillable = ['name', 'description'];
 
-    // --- ADD THIS NEW FUNCTION ---
-    // This allows $department->users or Department::withCount('users') to work
+    /**
+     * Get the users for the department.
+     * Useful for Auth/Login related queries.
+     */
     public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    // (Optional) You can keep this for old code, but 'users' is the new standard
+    /**
+     * Get the employees for the department.
+     * Useful for Staff Directory and HR queries.
+     */
     public function employees()
     {
         return $this->hasMany(Employee::class);
