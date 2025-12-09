@@ -13,45 +13,49 @@ use App\Mail\AccountCreated;
 class EmployeeController extends Controller
 {
     // 1. Show List (Users Only)
-    public function index(Request $request)
-    {
-        // Start query on User model
-        // FIX: Added filter to exclude admins immediately
-        $query = User::where('role', '!=', 'admin');
+   // In app/Http/Controllers/EmployeeController.php
 
-        // Optional: Hide yourself (the currently logged in admin) specifically
-        // $query->where('id', '!=', auth()->id()); 
+public function index(Request $request)
+{
+    // Start query on User model
+    $query = User::where('role', '!=', 'admin');
 
-        // Search Logic
-       if ($request->filled('search')) {
-    $search = $request->search;
-    $query->where(function($q) use ($search) {
-        // CHANGE THIS: Search first or last name instead of 'name'
-        $q->where('first_name', 'like', "%{$search}%")
-          ->orWhere('last_name', 'like', "%{$search}%")
-          ->orWhere('email', 'like', "%{$search}%")
-          ->orWhere('employee_number', 'like', "%{$search}%");
-    });
-}
-
-        // Sort Logic
-        if ($request->filled('sort')) {
-    switch ($request->sort) {
-        // CHANGE THIS: Sort by first_name instead of 'name'
-        case 'name_asc': $query->orderBy('first_name', 'asc'); break;
-        case 'name_desc': $query->orderBy('first_name', 'desc'); break;
-                case 'date_newest': $query->orderBy('created_at', 'desc'); break;
-                case 'date_oldest': $query->orderBy('created_at', 'asc'); break;
-                case 'job': $query->orderBy('job_title', 'asc'); break;
-                default: $query->orderBy('created_at', 'desc');
-            }
-        } else {
-            $query->orderBy('created_at', 'desc');
-        }
-
-        $employees = $query->paginate(10); // Added pagination for better UI
-        return view('admin.employees.index', compact('employees'));
+    // Search Logic (Keep existing)
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%")
+              ->orWhere('employee_number', 'like', "%{$search}%");
+        });
     }
+
+    // Sort Logic (UPDATED)
+    if ($request->filled('sort')) {
+        switch ($request->sort) {
+            case 'name_asc': $query->orderBy('first_name', 'asc'); break;
+            case 'name_desc': $query->orderBy('first_name', 'desc'); break;
+            case 'date_newest': $query->orderBy('created_at', 'desc'); break;
+            case 'date_oldest': $query->orderBy('created_at', 'asc'); break;
+            case 'job': $query->orderBy('job_title', 'asc'); break;
+            
+            // --- NEW CASE: ARCHIVED ---
+            case 'archived': 
+                $query->whereNotNull('archived_at'); 
+                break;
+                
+            default: $query->orderBy('created_at', 'desc');
+        }
+    } else {
+        // By default, you might want to HIDE archived users unless searched for?
+        // Or just show everyone sorted by date.
+        $query->orderBy('created_at', 'desc');
+    }
+
+    $employees = $query->paginate(10);
+    return view('admin.employees.index', compact('employees'));
+}
 
     // 2. Show Hire Form
    // In App\Http\Controllers\UserController.php
@@ -194,6 +198,7 @@ public function create()
     }
 
     // 8. Archive (Ban) User
+    // 8. Archive (Ban) User
     public function archive($id)
     {
         $user = User::findOrFail($id);
@@ -203,7 +208,8 @@ public function create()
             $message = 'User account restored.';
         } else {
             $user->update(['archived_at' => now()]);
-            $message = 'User account archived.';
+            // UPDATED MESSAGE:
+            $message = 'User account suspended.'; 
         }
 
         return back()->with('success', $message);

@@ -31,6 +31,9 @@
                             <option value="date_oldest" {{ request('sort') == 'date_oldest' ? 'selected' : '' }}>Longest Tenure</option>
                             <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>Name (A-Z)</option>
                             <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>Name (Z-A)</option>
+                            
+                            {{-- UPDATED: Text changed to Suspended --}}
+                            <option value="archived" {{ request('sort') == 'archived' ? 'selected' : '' }} class="text-red-600 font-bold">Suspended Accounts</option>
                         </select>
                     </div>
                     <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-lg transition">Filter</button>
@@ -59,13 +62,12 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach ($employees as $employee)
                             @php
-                                $isArchived = $employee->archived_at !== null;
+                                $isSuspended = $employee->archived_at !== null;
                             @endphp
-                        <tr class="hover:bg-gray-50 transition duration-150 {{ $isArchived ? 'bg-red-50' : '' }}">
+                        <tr class="hover:bg-gray-50 transition duration-150 {{ $isSuspended ? 'bg-red-50' : '' }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="text-sm font-bold text-gray-900 mr-2">
-                                        {{-- LOGIC CHANGE HERE: Check if name exists --}}
                                         @if($employee->first_name)
                                             {{ $employee->first_name }} 
                                             {{ $employee->middle_initial ? $employee->middle_initial . '.' : '' }}
@@ -75,9 +77,10 @@
                                             <span class="text-red-500 italic font-normal">Pending Setup...</span>
                                         @endif
                                     </div>
-                                    @if($isArchived)
+                                    @if($isSuspended)
+                                        {{-- UPDATED: Text changed to SUSPENDED --}}
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">
-                                            ARCHIVED
+                                            SUSPENDED
                                         </span>
                                     @endif
                                 </div>

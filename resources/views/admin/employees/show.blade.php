@@ -5,8 +5,9 @@
                 {{ __('Employee Profile') }}
             </h2>
             @if($employee->archived_at)
+                {{-- UPDATED LABEL --}}
                 <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200 animate-pulse">
-                    ⛔ ARCHIVED ACCOUNT
+                    ⛔ SUSPENDED ACCOUNT
                 </span>
             @else
                 <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold border border-green-200">
@@ -16,8 +17,8 @@
         </div>
     </x-slot>
 
-    {{-- UPDATED: Removed 'showDeleteModal' from x-data since we don't need it anymore --}}
-    <div class="py-12 bg-slate-50 min-h-screen" x-data="{ showArchiveModal: false }">
+    {{-- UPDATED: Changed variable name to 'showSuspendModal' --}}
+    <div class="py-12 bg-slate-50 min-h-screen" x-data="{ showSuspendModal: false }">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 animate-scale-in">
@@ -36,12 +37,10 @@
     <div class="inline-flex items-center justify-center w-28 h-28 rounded-full border-4 border-blue-50 shadow-sm overflow-hidden bg-blue-600">
         
         @if($employee->profile_photo_path)
-            {{-- Display the uploaded photo --}}
             <img src="{{ asset('storage/' . $employee->profile_photo_path) }}" 
                  alt="{{ $employee->first_name }}'s Photo" 
                  class="w-full h-full object-cover">
         @else
-            {{-- Display initials if no photo is uploaded (Fallback) --}}
             <span class="text-4xl font-bold text-white">
                 {{ substr($employee->first_name, 0, 1) }}{{ substr($employee->last_name, 0, 1) }}
             </span>
@@ -152,26 +151,26 @@
                         </a>
 
                         <div class="flex flex-wrap justify-center sm:justify-end gap-3 w-full sm:w-auto">
-                            <button @click="showArchiveModal = true" class="px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition transform hover:-translate-y-0.5 {{ $employee->archived_at ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200' }}">
-                                {{ $employee->archived_at ? 'Restore Access' : 'Archive User' }}
+                            {{-- UPDATED: Use showSuspendModal, 'Suspend User', and 'Restore Access' --}}
+                            <button @click="showSuspendModal = true" class="px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition transform hover:-translate-y-0.5 {{ $employee->archived_at ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-amber-100 text-amber-700 hover:bg-amber-200' }}">
+                                {{ $employee->archived_at ? 'Restore Access' : 'Suspend User' }}
                             </button>
 
                             <a href="{{ route('admin.employees.edit', $employee->id) }}" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-sm shadow-md hover:bg-blue-700 transition transform hover:-translate-y-0.5">
                                 Edit Profile
                             </a>
-                            
-                            {{-- REMOVED: Delete Button was here --}}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div x-show="showArchiveModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+        {{-- UPDATED: Changed 'showArchiveModal' to 'showSuspendModal' --}}
+        <div x-show="showSuspendModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
             <div class="flex items-center justify-center min-h-screen px-4 text-center">
-                <div x-show="showArchiveModal" class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
+                <div x-show="showSuspendModal" class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
 
-                <div x-show="showArchiveModal" class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl relative z-10">
+                <div x-show="showSuspendModal" class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl relative z-10">
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full {{ $employee->archived_at ? 'bg-green-100' : 'bg-amber-100' }} sm:mx-0 sm:h-10 sm:w-10">
                             @if($employee->archived_at)
@@ -181,32 +180,34 @@
                             @endif
                         </div>
                         <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                            <h3 class="text-lg font-bold leading-6 text-gray-900">{{ $employee->archived_at ? 'Restore Access?' : 'Archive User Account?' }}</h3>
+                            {{-- UPDATED: Text Changed to 'Suspend' --}}
+                            <h3 class="text-lg font-bold leading-6 text-gray-900">{{ $employee->archived_at ? 'Restore Access?' : 'Suspend User Account?' }}</h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500">
                                     @if($employee->archived_at)
                                         This will restore access for <strong>{{ $employee->name }}</strong>. They will be able to log in immediately.
                                     @else
-                                        Are you sure you want to archive <strong>{{ $employee->name }}</strong>? They will be instantly banned from logging in. Data is preserved.
+                                        {{-- UPDATED: Text Changed to 'Suspend' --}}
+                                        Are you sure you want to suspend <strong>{{ $employee->name }}</strong>? They will be instantly banned from logging in. Data is preserved.
                                     @endif
                                 </p>
                             </div>
                         </div>
                     </div>
                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                        {{-- NOTE: We keep the route name 'admin.employees.archive' to prevent errors --}}
                         <form action="{{ route('admin.employees.archive', $employee->id) }}" method="POST">
                             @csrf
+                            {{-- UPDATED: Button Text Changed --}}
                             <button type="submit" class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto {{ $employee->archived_at ? 'bg-green-600 hover:bg-green-500' : 'bg-amber-600 hover:bg-amber-500' }}">
-                                {{ $employee->archived_at ? 'Confirm Restore' : 'Confirm Archive' }}
+                                {{ $employee->archived_at ? 'Confirm Restore' : 'Confirm Suspend' }}
                             </button>
                         </form>
-                        <button @click="showArchiveModal = false" type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</button>
+                        <button @click="showSuspendModal = false" type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</button>
                     </div>
                 </div>
             </div>
         </div>
-
-        {{-- REMOVED: Delete Modal was here --}}
 
     </div>
 </x-app-layout>
